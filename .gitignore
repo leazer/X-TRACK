@@ -36,7 +36,6 @@
 
 # Build files
 # define exception below if needed
-*.bat
 *._ia
 *.__i
 *._ii
