@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root>
+    <WorkBenchVersion>
+        <Version>V1.2.03</Version>
+    </WorkBenchVersion>
+    <MCUInfo>
+        <MCUSerials>AT32F426</MCUSerials>
+        <MCUName>AT32F426K8U7-4</MCUName>
+        <MCUPackage>QFN32</MCUPackage>
+    </MCUInfo>
+    <CAN1>
+        <Mode>
+            <ModeSub name="CAN_Activate" value="TRUE"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="Nominal_Sample_Point" value="75.0"/>
+            <ParametersSub name="Data_Sample_Point" value="75.0"/>
+            <ParametersSub name="Nominal_BTS1" value="135"/>
+            <ParametersSub name="Nominal_BTS2" value="45"/>
+            <ParametersSub name="Nominal_RSAW" value="45"/>
+            <ParametersSub name="Data_BTS1" value="27"/>
+            <ParametersSub name="Data_BTS2" value="9"/>
+            <ParametersSub name="Data_RSAW" value="9"/>
+            <ParametersSub name="Data_Sec_Offset" value="28"/>
+        </Parameters>
+    </CAN1>
+    <CRM>
+        <Mode>
+            <ModeSub name="HEXT" value="HEXT-External-Oscillator"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="HEXT" value="HEXT_CRYSTAL"/>
+        </Parameters>
+    </CRM>
+    <DEBUG>
+        <Mode>
+            <ModeSub name="SWD" value="TRUE"/>
+            <ModeSub name="SWO" value="FALSE"/>
+        </Mode>
+    </DEBUG>
+    <SYSTEM>
+        <Mode>
+            <ModeSub name="Time_Base" value="SysTick"/>
+        </Mode>
+    </SYSTEM>
+    <USART2>
+        <Mode>
+            <ModeSub name="Mode" value="Asynchronous"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="RealBaudRate" value="115163"/>
+        </Parameters>
+    </USART2>
+    <NVIC>
+        <SysTick_Handler>1;15;0;0;0</SysTick_Handler>
+        <FLASH_IRQHandler>0;0;0;0;0</FLASH_IRQHandler>
+        <CRM_IRQHandler>0;0;0;0;0</CRM_IRQHandler>
+        <USART2_IRQHandler>0;0;0;0;0</USART2_IRQHandler>
+        <CAN1_TX_IRQHandler>0;0;0;0;0</CAN1_TX_IRQHandler>
+        <CAN1_RX_IRQHandler>0;0;0;0;0</CAN1_RX_IRQHandler>
+        <CAN1_STAT_IRQHandler>0;0;0;0;0</CAN1_STAT_IRQHandler>
+        <CAN1_ERR_IRQHandler>0;0;0;0;0</CAN1_ERR_IRQHandler>
+        <FPU_IRQHandler>0;0;0;0;0</FPU_IRQHandler>
+    </NVIC>
+    <ClockConfiguration>
+        <lextbypass>0</lextbypass>
+        <rtcsel>0</rtcsel>
+        <hext>8.000000</hext>
+        <hextbypass>0</hextbypass>
+        <pllhextdiv>0</pllhextdiv>
+        <pllrcs>1</pllrcs>
+        <pllmode>0</pllmode>
+        <pllmult>45</pllmult>
+        <pllms>1</pllms>
+        <pllns>75</pllns>
+        <pllfr>4</pllfr>
+        <sclkselect>1</sclkselect>
+        <ahbdiv>1</ahbdiv>
+        <apb1div>1</apb1div>
+        <apb2div>1</apb2div>
+        <apb3div>2</apb3div>
+        <hicktosclk>0</hicktosclk>
+        <clkout>0</clkout>
+        <clkoutdiv>1</clkoutdiv>
+        <clkoutpinselect>0</clkoutpinselect>
+        <adcswitch>0</adcswitch>
+        <adcdiv>6</adcdiv>
+        <canclocksel>1</canclocksel>
+        <systicsel>8</systicsel>
+    </ClockConfiguration>
+    <PINInfo>
+        <PinSub pinname="PF0" signalname="CRM_HEXT_IN" signaltype="2"/>
+        <PinSub pinname="PF1" signalname="CRM_HEXT_OUT" signaltype="2"/>
+        <PinSub pinname="PA2" signalname="USART2_TX" signaltype="2"/>
+        <PinSub pinname="PA3" signalname="USART2_RX" signaltype="2"/>
+        <PinSub pinname="PA11" signalname="CAN1_RX" signaltype="2"/>
+        <PinSub pinname="PA12" signalname="CAN1_TX" signaltype="2"/>
+        <PinSub pinname="PA13" signalname="DEBUG_SWDIO" signaltype="2"/>
+        <PinSub pinname="PA14" signalname="DEBUG_SWCLK" signaltype="2"/>
+    </PINInfo>
+    <ProjectInfomation>
+        <ProjectName>AT32F426K8U7-4_WorkBench</ProjectName>
+        <ProjectLocation>D:/ChipInfomation/AT32/X-TRACK/Hardware</ProjectLocation>
+        <ToolchainIDE>AT32_IDE</ToolchainIDE>
+        <ARMCompiler>0</ARMCompiler>
+        <BackupCode>true</BackupCode>
+        <KeepUserCode>true</KeepUserCode>
+        <NotUsedPinAnalog>false</NotUsedPinAnalog>
+        <CodeSplitIP>true</CodeSplitIP>
+        <AddNecessaryFileFlag>true</AddNecessaryFileFlag>
+        <MinHeapSize>0x200</MinHeapSize>
+        <MinStackSize>0x400</MinStackSize>
+        <UseFirmware>true</UseFirmware>
+        <PackageVersion></PackageVersion>
+    </ProjectInfomation>
+</Root>
