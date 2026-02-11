@@ -33,6 +33,7 @@
 *.obj
 *.o
 *.sbr
+*.dis
 
 # Build files
 # define exception below if needed
@@ -80,3 +81,7 @@
 # Other files
 xtrack
 MAP/
+.vscode/
+GNSSToolKitLite_configs.ini
+*SystemSave*
+keil-build*

@@ -114,6 +114,11 @@
             <ModeSub name="Mode" value="Device_Only"/>
         </Mode>
     </USB_OTGFS1>
+    <USB_DEVICE>
+        <Mode>
+            <ModeSub name="OTGFS1_Device" value="CDC"/>
+        </Mode>
+    </USB_DEVICE>
     <NVIC>
         <SysTick_Handler>1;15;0;0;0</SysTick_Handler>
         <FLASH_IRQHandler>0;0;0;0;0</FLASH_IRQHandler>
@@ -130,7 +135,7 @@
         <USART1_IRQHandler>0;0;0;0;0</USART1_IRQHandler>
         <USART3_IRQHandler>0;0;0;0;0</USART3_IRQHandler>
         <OTGFS1_WKUP_IRQHandler>0;0;0;0;0</OTGFS1_WKUP_IRQHandler>
-        <OTGFS1_IRQHandler>0;0;0;0;0</OTGFS1_IRQHandler>
+        <OTGFS1_IRQHandler>1;0;0;0;0</OTGFS1_IRQHandler>
         <FPU_IRQHandler>0;0;0;0;0</FPU_IRQHandler>
         <ACC_IRQHandler>0;0;0;0;0</ACC_IRQHandler>
     </NVIC>
@@ -296,7 +301,7 @@
     <ProjectInfomation>
         <ProjectName>AT32F435CGT7_WorkBench</ProjectName>
         <ProjectLocation>D:/ChipInfomation/AT32/X-TRACK/Hardware</ProjectLocation>
-        <ToolchainIDE>AT32_IDE</ToolchainIDE>
+        <ToolchainIDE>MDK_V5</ToolchainIDE>
         <ARMCompiler>0</ARMCompiler>
         <BackupCode>true</BackupCode>
         <KeepUserCode>true</KeepUserCode>
@@ -306,6 +311,6 @@
         <MinHeapSize>0x200</MinHeapSize>
         <MinStackSize>0x400</MinStackSize>
         <UseFirmware>true</UseFirmware>
-        <PackageVersion></PackageVersion>
+        <PackageVersion>V2.2.3</PackageVersion>
     </ProjectInfomation>
 </Root>

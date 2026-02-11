@@ -16,6 +16,6 @@ echo Extracted file name: %FILE_NAME%
 "C:\Keil_v5\ARM\ARMCLANG\bin\fromelf.exe" --text -a -c -o Bin\%FILE_NAME%.dis "%OUTPUT_FILE%"
 
 :: 3) 你的第3条命令（示例：复制文件）
-keil-build-viewer.exe
+..\Tools\keil-build-viewer.exe
 
 :: 4) 你的第4条命令（示例：调用外部工具）
