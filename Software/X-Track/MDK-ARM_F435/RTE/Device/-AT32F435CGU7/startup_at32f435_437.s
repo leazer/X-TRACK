@@ -1,8 +1,7 @@
 ;**************************************************************************
 ;* @file     startup_at32f435_437.s
-;* @version  v2.0.0
-;* @date     2021-09-06
 ;* @brief    at32f435_437 startup file for keil
+;* <<< Use Configuration Wizard in Context Menu >>>  
 ;**************************************************************************
 ;
 
@@ -12,7 +11,7 @@
 ;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Stack_Size      EQU     0x00001000
+Stack_Size      EQU     0x00000400
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
@@ -77,8 +76,8 @@ __Vectors       DCD     __initial_sp                        ; Top of Stack
                 DCD     EDMA_Stream7_IRQHandler             ; EDMA Stream 7
                 DCD     ADC1_2_3_IRQHandler                 ; ADC1 & ADC2 & ADC3
                 DCD     CAN1_TX_IRQHandler                  ; CAN1 TX
-                DCD     CAN1_RX0_IRQHandler                 ; CAN1 RX0 
-                DCD     CAN1_RX1_IRQHandler                 ; CAN1 RX1 
+                DCD     CAN1_RX0_IRQHandler                 ; CAN1 RX0
+                DCD     CAN1_RX1_IRQHandler                 ; CAN1 RX1
                 DCD     CAN1_SE_IRQHandler                  ; CAN1 SE
                 DCD     EXINT9_5_IRQHandler                 ; EXINT Line [9:5]
                 DCD     TMR1_BRK_TMR9_IRQHandler            ; TMR1 Brake and TMR9
@@ -121,8 +120,8 @@ __Vectors       DCD     __initial_sp                        ; Top of Stack
                 DCD     EMAC_IRQHandler                     ; EMAC
                 DCD     EMAC_WKUP_IRQHandler                ; EMAC Wakeup
                 DCD     CAN2_TX_IRQHandler                  ; CAN2 TX
-                DCD     CAN2_RX0_IRQHandler                 ; CAN2 RX0 
-                DCD     CAN2_RX1_IRQHandler                 ; CAN2 RX1 
+                DCD     CAN2_RX0_IRQHandler                 ; CAN2 RX0
+                DCD     CAN2_RX1_IRQHandler                 ; CAN2 RX1
                 DCD     CAN2_SE_IRQHandler                  ; CAN2 SE
                 DCD     OTGFS1_IRQHandler                   ; OTGFS1
                 DCD     DMA1_Channel6_IRQHandler            ; DMA1 Channel 6
@@ -170,8 +169,8 @@ __Vectors       DCD     __initial_sp                        ; Top of Stack
                 DCD     DMA2_Channel3_IRQHandler            ; DMA2 Channel 3
                 DCD     DMA2_Channel4_IRQHandler            ; DMA2 Channel 4
                 DCD     DMA2_Channel5_IRQHandler            ; DMA2 Channel 5
-                DCD     DMA2_Channel6_IRQHandler            ; DMA2 Channel 6	
-                DCD     DMA2_Channel7_IRQHandler            ; DMA2 Channel 7					
+                DCD     DMA2_Channel6_IRQHandler            ; DMA2 Channel 6
+                DCD     DMA2_Channel7_IRQHandler            ; DMA2 Channel 7
 __Vectors_End
 
 __Vectors_Size  EQU  __Vectors_End - __Vectors

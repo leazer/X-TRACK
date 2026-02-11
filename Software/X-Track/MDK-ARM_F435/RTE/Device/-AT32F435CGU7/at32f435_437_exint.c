@@ -1,17 +1,16 @@
 /**
   **************************************************************************
   * @file     at32f435_437_exint.c
-  * @version  v2.0.5
-  * @date     2022-02-11
   * @brief    contains all the functions for the exint firmware library
   **************************************************************************
-  *                       Copyright notice & Disclaimer
   *
-  * The software Board Support Package (BSP) that is made available to 
-  * download from Artery official website is the copyrighted work of Artery. 
-  * Artery authorizes customers to use, copy, and distribute the BSP 
-  * software and its related documentation for the purpose of design and 
-  * development in conjunction with Artery microcontrollers. Use of the 
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
+  *
+  * The software Board Support Package (BSP) that is made available to
+  * download from Artery official website is the copyrighted work of Artery.
+  * Artery authorizes customers to use, copy, and distribute the BSP
+  * software and its related documentation for the purpose of design and
+  * development in conjunction with Artery microcontrollers. Use of the
   * software is governed by this copyright notice and the following disclaimer.
   *
   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
@@ -85,7 +84,7 @@ void exint_init(exint_init_type *exint_struct)
 
   if(exint_struct->line_enable != FALSE)
   {
-    if(exint_struct->line_mode == EXINT_LINE_INTERRUPUT)
+    if(exint_struct->line_mode == EXINT_LINE_INTERRUPT)
     {
       EXINT->inten |= line_index;
     }
@@ -156,6 +155,35 @@ flag_status exint_flag_get(uint32_t exint_line)
 }
 
 /**
+  * @brief  get exint interrupt flag
+  * @param  exint_line
+  *         this parameter can be one of the following values:
+  *         - EXINT_LINE_0
+  *         - EXINT_LINE_1
+  *         ...
+  *         - EXINT_LINE_21
+  *         - EXINT_LINE_22
+  * @retval the new state of exint flag(SET or RESET).
+  */
+flag_status exint_interrupt_flag_get(uint32_t exint_line)
+{
+  flag_status status = RESET;
+  uint32_t exint_flag = 0;
+  exint_flag = EXINT->intsts & exint_line;
+  exint_flag = exint_flag & EXINT->inten;
+
+  if((exint_flag != (uint16_t)RESET))
+  {
+    status = SET;
+  }
+  else
+  {
+    status = RESET;
+  }
+  return status;
+}
+
+/**
   * @brief  generate exint software interrupt event
   * @param  exint_line
   *         this parameter can be one of the following values:
@@ -182,7 +210,7 @@ void exint_software_interrupt_event_generate(uint32_t exint_line)
   *         - EXINT_LINE_22
   * @param  new_state: new state of exint interrupt.
   *         this parameter can be: TRUE or FALSE.
-  * @retval none                            
+  * @retval none
   */
 void exint_interrupt_enable(uint32_t exint_line, confirm_state new_state)
 {
@@ -207,7 +235,7 @@ void exint_interrupt_enable(uint32_t exint_line, confirm_state new_state)
   *         - EXINT_LINE_22
   * @param  new_state: new state of exint event.
   *         this parameter can be: TRUE or FALSE.
-  * @retval none                            
+  * @retval none
   */
 void exint_event_enable(uint32_t exint_line, confirm_state new_state)
 {

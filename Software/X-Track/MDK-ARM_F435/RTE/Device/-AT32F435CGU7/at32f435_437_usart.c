@@ -1,17 +1,16 @@
 /**
   **************************************************************************
   * @file     at32f435_437_usart.c
-  * @version  v2.0.5
-  * @date     2022-02-11
   * @brief    contains all the functions for the usart firmware library
   **************************************************************************
-  *                       Copyright notice & Disclaimer
   *
-  * The software Board Support Package (BSP) that is made available to 
-  * download from Artery official website is the copyrighted work of Artery. 
-  * Artery authorizes customers to use, copy, and distribute the BSP 
-  * software and its related documentation for the purpose of design and 
-  * development in conjunction with Artery microcontrollers. Use of the 
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
+  *
+  * The software Board Support Package (BSP) that is made available to
+  * download from Artery official website is the copyrighted work of Artery.
+  * Artery authorizes customers to use, copy, and distribute the BSP
+  * software and its related documentation for the purpose of design and
+  * development in conjunction with Artery microcontrollers. Use of the
   * software is governed by this copyright notice and the following disclaimer.
   *
   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
@@ -35,13 +34,13 @@
   * @brief USART driver modules
   * @{
   */
-  
+
 #ifdef USART_MODULE_ENABLED
 
 /** @defgroup USART_private_functions
   * @{
   */
-  
+
 /**
   * @brief  deinitialize the usart peripheral registers to their default reset values.
   * @param  usart_x: select the usart or the uart peripheral.
@@ -86,11 +85,14 @@ void usart_reset(usart_type* usart_x)
     crm_periph_reset(CRM_UART7_PERIPH_RESET, TRUE);
     crm_periph_reset(CRM_UART7_PERIPH_RESET, FALSE);
   }
+#if defined (AT32F435Zx) || defined (AT32F435Vx) || defined (AT32F435Rx) || \
+    defined (AT32F437Zx) || defined (AT32F437Vx) || defined (AT32F437Rx)
   else if(usart_x == UART8)
   {
     crm_periph_reset(CRM_UART8_PERIPH_RESET, TRUE);
     crm_periph_reset(CRM_UART8_PERIPH_RESET, FALSE);
   }
+#endif
 }
 
 /**
@@ -99,11 +101,14 @@ void usart_reset(usart_type* usart_x)
   *         this parameter can be one of the following values:
   *         USART1, USART2, USART3, UART4 ,UART5, USART6, UART7 or UART8.
   * @param  baud_rate: configure the usart communication baud rate.
-  * @param  data_bit: data bits transmitted or received in a frame    
+  * @param  data_bit: data bits transmitted or received in a frame
   *         this parameter can be one of the following values:
   *         - USART_DATA_7BITS
   *         - USART_DATA_8BITS
   *         - USART_DATA_9BITS.
+  *         note:
+  *         - when parity check is disabled, the data bit width is the actual data bit number.
+  *         - when parity check is enabled, the data bit width is the actual data bit number minus 1, and the MSB bit is replaced with the parity bit.
   * @param  stop_bit: stop bits transmitted
   *         this parameter can be one of the following values:
   *         - USART_STOP_1_BIT
@@ -116,8 +121,8 @@ void usart_init(usart_type* usart_x, uint32_t baud_rate, usart_data_bit_num_type
 {
   crm_clocks_freq_type clocks_freq;
   uint32_t apb_clock, temp_val;
-  crm_clocks_freq_get(&clocks_freq);    
-  if((usart_x == USART1) || (usart_x == USART6) ||  (usart_x == UART7) || (usart_x == UART8))
+  crm_clocks_freq_get(&clocks_freq);
+  if((usart_x == USART1) || (usart_x == USART6))
   {
     apb_clock = clocks_freq.apb2_freq;
   }
@@ -137,20 +142,20 @@ void usart_init(usart_type* usart_x, uint32_t baud_rate, usart_data_bit_num_type
   usart_x->baudr_bit.div = temp_val;
   if(data_bit == USART_DATA_7BITS)
   {
-    usart_x->ctrl1_bit.dbn_h = 1; 
-    usart_x->ctrl1_bit.dbn_l = 0; 
+    usart_x->ctrl1_bit.dbn_h = 1;
+    usart_x->ctrl1_bit.dbn_l = 0;
   }
   else if(data_bit == USART_DATA_8BITS)
   {
-    usart_x->ctrl1_bit.dbn_h = 0; 
-    usart_x->ctrl1_bit.dbn_l = 0; 
+    usart_x->ctrl1_bit.dbn_h = 0;
+    usart_x->ctrl1_bit.dbn_l = 0;
   }
   else
   {
-    usart_x->ctrl1_bit.dbn_h = 0; 
-    usart_x->ctrl1_bit.dbn_l = 1; 
+    usart_x->ctrl1_bit.dbn_h = 0;
+    usart_x->ctrl1_bit.dbn_l = 1;
   }
-  usart_x->ctrl2_bit.stopbn = stop_bit; 
+  usart_x->ctrl2_bit.stopbn = stop_bit;
 }
 
 /**
@@ -170,17 +175,17 @@ void usart_parity_selection_config(usart_type* usart_x, usart_parity_selection_t
   if(parity == USART_PARITY_NONE)
   {
     usart_x->ctrl1_bit.psel = FALSE;
-    usart_x->ctrl1_bit.pen = FALSE;   
+    usart_x->ctrl1_bit.pen = FALSE;
   }
   else if(parity == USART_PARITY_EVEN)
   {
     usart_x->ctrl1_bit.psel = FALSE;
-    usart_x->ctrl1_bit.pen = TRUE;   
+    usart_x->ctrl1_bit.pen = TRUE;
   }
   else if(parity == USART_PARITY_ODD)
   {
     usart_x->ctrl1_bit.psel = TRUE;
-    usart_x->ctrl1_bit.pen = TRUE;   
+    usart_x->ctrl1_bit.pen = TRUE;
   }
 }
 
@@ -246,9 +251,9 @@ void usart_receiver_enable(usart_type* usart_x, confirm_state new_state)
   */
 void usart_clock_config(usart_type* usart_x, usart_clock_polarity_type clk_pol, usart_clock_phase_type clk_pha, usart_lbcp_type clk_lb)
 {
-  usart_x->ctrl2_bit.clkpol = clk_pol; 
+  usart_x->ctrl2_bit.clkpol = clk_pol;
   usart_x->ctrl2_bit.clkpha = clk_pha;
-  usart_x->ctrl2_bit.lbcp = clk_lb; 
+  usart_x->ctrl2_bit.lbcp = clk_lb;
 }
 
 /**
@@ -285,7 +290,7 @@ void usart_clock_enable(usart_type* usart_x, confirm_state new_state)
   * @retval none
   */
 void usart_interrupt_enable(usart_type* usart_x, uint32_t usart_int, confirm_state new_state)
-{  
+{
   if(new_state == TRUE)
     PERIPH_REG((uint32_t)usart_x, usart_int) |= PERIPH_REG_BIT(usart_int);
   else
@@ -399,7 +404,7 @@ void usart_break_bit_num_set(usart_type* usart_x, usart_break_bit_num_type break
   */
 void usart_lin_mode_enable(usart_type* usart_x, confirm_state new_state)
 {
-  usart_x->ctrl2_bit.linen = new_state; 
+  usart_x->ctrl2_bit.linen = new_state;
 }
 
 /**
@@ -436,7 +441,7 @@ uint16_t usart_data_receive(usart_type* usart_x)
   */
 void usart_break_send(usart_type* usart_x)
 {
-  usart_x->ctrl1_bit.sbf = TRUE; 
+  usart_x->ctrl1_bit.sbf = TRUE;
 }
 
 /**
@@ -450,7 +455,7 @@ void usart_break_send(usart_type* usart_x)
   */
 void usart_smartcard_guard_time_set(usart_type* usart_x, uint8_t guard_time_val)
 {
-  usart_x->gdiv_bit.scgt = guard_time_val; 
+  usart_x->gdiv_bit.scgt = guard_time_val;
 }
 
 /**
@@ -464,7 +469,7 @@ void usart_smartcard_guard_time_set(usart_type* usart_x, uint8_t guard_time_val)
   */
 void usart_irda_smartcard_division_set(usart_type* usart_x, uint8_t div_val)
 {
-  usart_x->gdiv_bit.isdiv = div_val; 
+  usart_x->gdiv_bit.isdiv = div_val;
 }
 
 /**
@@ -479,7 +484,7 @@ void usart_irda_smartcard_division_set(usart_type* usart_x, uint8_t div_val)
   */
 void usart_smartcard_mode_enable(usart_type* usart_x, confirm_state new_state)
 {
-  usart_x->ctrl3_bit.scmen = new_state; 
+  usart_x->ctrl3_bit.scmen = new_state;
 }
 
 /**
@@ -494,7 +499,7 @@ void usart_smartcard_mode_enable(usart_type* usart_x, confirm_state new_state)
   */
 void usart_smartcard_nack_set(usart_type* usart_x, confirm_state new_state)
 {
-  usart_x->ctrl3_bit.scnacken = new_state; 
+  usart_x->ctrl3_bit.scnacken = new_state;
 }
 
 /**
@@ -508,7 +513,7 @@ void usart_smartcard_nack_set(usart_type* usart_x, confirm_state new_state)
   */
 void usart_single_line_halfduplex_select(usart_type* usart_x, confirm_state new_state)
 {
-  usart_x->ctrl3_bit.slben = new_state; 
+  usart_x->ctrl3_bit.slben = new_state;
 }
 
 /**
@@ -522,7 +527,7 @@ void usart_single_line_halfduplex_select(usart_type* usart_x, confirm_state new_
   */
 void usart_irda_mode_enable(usart_type* usart_x, confirm_state new_state)
 {
-  usart_x->ctrl3_bit.irdaen = new_state; 
+  usart_x->ctrl3_bit.irdaen = new_state;
 }
 
 /**
@@ -536,14 +541,14 @@ void usart_irda_mode_enable(usart_type* usart_x, confirm_state new_state)
   */
 void usart_irda_low_power_enable(usart_type* usart_x, confirm_state new_state)
 {
-  usart_x->ctrl3_bit.irdalp = new_state; 
+  usart_x->ctrl3_bit.irdalp = new_state;
 }
 
 /**
   * @brief  configure the usart's hardware flow control.
   * @param  usart_x: select the usart or the uart peripheral.
   *         this parameter can be one of the following values:
-  *         USART1, USART2, USART3
+  *         USART1, USART2, USART3, USART6
   * @param  flow_state: specifies the hardware flow control.
   *         this parameter can be one of the following values:
   *         - USART_HARDWARE_FLOW_NONE
@@ -573,7 +578,7 @@ void usart_hardware_flow_control_set(usart_type* usart_x,usart_hardware_flow_con
   {
     usart_x->ctrl3_bit.rtsen = TRUE;
     usart_x->ctrl3_bit.ctsen = TRUE;
-  }  
+  }
 }
 
 /**
@@ -608,16 +613,94 @@ flag_status usart_flag_get(usart_type* usart_x, uint32_t flag)
 }
 
 /**
+  * @brief  check whether the specified usart interrupt flag is set or not.
+  * @param  usart_x: select the usart or the uart peripheral.
+  *         this parameter can be one of the following values:
+  *         USART1, USART2, USART3, UART4, UART5, USART6, UART7 or UART8.
+  * @param  flag: specifies the flag to check.
+  *         this parameter can be one of the following values:
+  *         - USART_CTSCF_FLAG: cts change flag (not available for UART4, UART5, UART7 and UART8)
+  *         - USART_BFF_FLAG:   break frame flag
+  *         - USART_TDBE_FLAG:  transmit data buffer empty flag
+  *         - USART_TDC_FLAG:   transmit data complete flag
+  *         - USART_RDBF_FLAG:  receive data buffer full flag
+  *         - USART_IDLEF_FLAG: idle flag
+  *         - USART_ROERR_FLAG: receiver overflow error flag
+  *         - USART_NERR_FLAG:  noise error flag
+  *         - USART_FERR_FLAG:  framing error flag
+  *         - USART_PERR_FLAG:  parity error flag
+  * @retval the new state of usart_flag (SET or RESET).
+  */
+flag_status usart_interrupt_flag_get(usart_type* usart_x, uint32_t flag)
+{
+  flag_status int_status = RESET;
+
+  switch(flag)
+  {
+    case USART_CTSCF_FLAG:
+      int_status = (flag_status)usart_x->ctrl3_bit.ctscfien;
+      break;
+    case USART_BFF_FLAG:
+      int_status = (flag_status)usart_x->ctrl2_bit.bfien;
+      break;
+    case USART_TDBE_FLAG:
+      int_status = (flag_status)usart_x->ctrl1_bit.tdbeien;
+      break;
+    case USART_TDC_FLAG:
+      int_status = (flag_status)usart_x->ctrl1_bit.tdcien;
+      break;
+    case USART_RDBF_FLAG:
+      int_status = (flag_status)usart_x->ctrl1_bit.rdbfien;
+      break;
+    case USART_ROERR_FLAG:
+      int_status = (flag_status)(usart_x->ctrl1_bit.rdbfien || usart_x->ctrl3_bit.errien);
+      break;
+    case USART_IDLEF_FLAG:
+      int_status = (flag_status)usart_x->ctrl1_bit.idleien;
+      break;  
+    case USART_NERR_FLAG:
+    case USART_FERR_FLAG:
+      int_status = (flag_status)usart_x->ctrl3_bit.errien;
+      break;
+    case USART_PERR_FLAG:
+      int_status = (flag_status)usart_x->ctrl1_bit.perrien;
+      break;      
+    default:
+      int_status = RESET;
+      break;
+  }
+
+  if(int_status != SET)
+  {
+    return RESET;
+  }
+
+  if(usart_x->sts & flag)
+  {
+    return SET;
+  }
+  else
+  {
+    return RESET;
+  }
+}
+
+/**
   * @brief  clear the usart's pending flags.
   * @param  usart_x: select the usart or the uart peripheral.
   *         this parameter can be one of the following values:
   *         USART1, USART2, USART3, UART4, UART5, USART6, UART7 or UART8.
   * @param  flag: specifies the flag to clear.
   *         this parameter can be any combination of the following values:
-  *         - USART_CTSCF_FLAG: (not available for UART4,UART5,USART6,UART7 and UART8).
-  *         - USART_BFF_FLAG:  
-  *         - USART_TDC_FLAG:   
-  *         - USART_RDBF_FLAG: 
+  *         - USART_CTSCF_FLAG: (not available for UART4, UART5, UART7 and UART8).
+  *         - USART_BFF_FLAG:
+  *         - USART_TDC_FLAG:
+  *         - USART_RDBF_FLAG:
+  *         - USART_PERR_FLAG:
+  *         - USART_FERR_FLAG:
+  *         - USART_NERR_FLAG:
+  *         - USART_ROERR_FLAG:
+  *         - USART_IDLEF_FLAG:
   * @note
   *         - USART_PERR_FLAG, USART_FERR_FLAG, USART_NERR_FLAG, USART_ROERR_FLAG and USART_IDLEF_FLAG are cleared by software
   *           sequence: a read operation to usart sts register (usart_flag_get())
@@ -630,14 +713,22 @@ flag_status usart_flag_get(usart_type* usart_x, uint32_t flag)
   */
 void usart_flag_clear(usart_type* usart_x, uint32_t flag)
 {
-  usart_x->sts = ~flag;
+  if(flag & (USART_PERR_FLAG | USART_FERR_FLAG | USART_NERR_FLAG | USART_ROERR_FLAG | USART_IDLEF_FLAG))
+  {
+    UNUSED(usart_x->sts);
+    UNUSED(usart_x->dt);
+  }
+  else
+  {
+    usart_x->sts = ~flag;
+  }
 }
 
 /**
   * @brief  configure the usart's rs485 transmit delay time.
   * @param  usart_x: select the usart or the uart peripheral.
   *         this parameter can be one of the following values:
-  *         USART1, USART2, USART3
+  *         USART1, USART2, USART3, USART6
   * @param  start_delay_time: transmit start delay time.
   * @param  complete_delay_time: transmit complete delay time.
   * @retval none
@@ -645,7 +736,7 @@ void usart_flag_clear(usart_type* usart_x, uint32_t flag)
 void usart_rs485_delay_time_config(usart_type* usart_x, uint8_t start_delay_time, uint8_t complete_delay_time)
 {
   usart_x->ctrl1_bit.tsdt = start_delay_time;
-  usart_x->ctrl1_bit.tcdt = complete_delay_time; 
+  usart_x->ctrl1_bit.tcdt = complete_delay_time;
 }
 
 /**
@@ -680,7 +771,7 @@ void usart_id_bit_num_set(usart_type* usart_x, usart_identification_bit_num_type
   * @brief  set the usart's de polarity.
   * @param  usart_x: select the usart or the uart peripheral.
   *         this parameter can be one of the following values:
-  *         USART1, USART2, USART3
+  *         USART1, USART2, USART3, USART6
   * @param  de_polarity: the usart de polarity selection.
   *         this parameter can be: USART_DE_POLARITY_HIGH or USART_DE_POLARITY_LOW.
   * @retval none
@@ -694,14 +785,14 @@ void usart_de_polarity_set(usart_type* usart_x, usart_de_polarity_type de_polari
   * @brief  enable or disable the usart's rs485 mode.
   * @param  usart_x: select the usart or the uart peripheral.
   *         this parameter can be one of the following values:
-  *         USART1, USART2, USART3
+  *         USART1, USART2, USART3, USART6
   * @param  new_state: new state of the irda mode.
   *         this parameter can be: TRUE or FALSE.
   * @retval none
   */
 void usart_rs485_mode_enable(usart_type* usart_x, confirm_state new_state)
 {
-  usart_x->ctrl3_bit.rs485en = new_state; 
+  usart_x->ctrl3_bit.rs485en = new_state;
 }
 
 /**
