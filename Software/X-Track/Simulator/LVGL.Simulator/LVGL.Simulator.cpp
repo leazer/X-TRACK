@@ -35,7 +35,7 @@
 #endif
 
 #define SCREEN_HOR_RES  240
-#define SCREEN_VER_RES  240
+#define SCREEN_VER_RES  320
 
 #include <stdio.h>
 #include <stdint.h>
