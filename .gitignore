@@ -84,4 +84,5 @@ MAP/
 .vscode/
 GNSSToolKitLite_configs.ini
 *SystemSave*
-keil-build*
+keil-build-viewer.log
+keil-build-viewer-record.txt
