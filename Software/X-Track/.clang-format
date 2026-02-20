@@ -1,0 +1,153 @@
+---
+# clang-format 配置文件
+# 基于 LLVM 风格，适用于 C/C++ 嵌入式项目
+
+# ==============================================================================
+# 缩进相关配置
+# ==============================================================================
+IndentWidth: 4                    # 缩进宽度：4个空格
+TabWidth: 4                        # Tab 宽度：4个空格
+UseTab: Never                      # 不使用 Tab，使用空格
+IndentCaseLabels: false            # case 标签不额外缩进
+
+# ==============================================================================
+# 大括号和换行
+# ==============================================================================
+BreakBeforeBraces: Allman          # 大括号另起一行（Allman 风格，如：if (x)\n{）
+BraceWrapping:
+  AfterClass: true                 # class 后换行
+  AfterControlStatement: true      # 控制语句后换行
+  AfterEnum: true                  # enum 后换行
+  AfterFunction: true              # 函数后换行
+  AfterNamespace: true             # namespace 后换行
+  AfterObjCDeclaration: false      # Objective-C 声明后不换行
+  AfterStruct: true                # struct 后换行
+  AfterUnion: true                 # union 后换行
+  AfterExternBlock: false          # extern block 后不换行
+  BeforeCatch: false               # catch 前不换行
+  BeforeElse: false                # else 前不换行
+  BeforeWhile: false               # while 前不换行
+  IndentBraces: false              # 大括号不额外缩进
+  SplitEmptyFunction: true         # 空函数可以分行
+  SplitEmptyRecord: true           # 空记录可以分行
+  SplitEmptyNamespace: true        # 空命名空间可以分行
+
+# ==============================================================================
+# 列宽和换行
+# ==============================================================================
+ColumnLimit: 100                   # 每行最大字符数：100
+AlwaysBreakAfterReturnType: None   # 返回类型后不强制换行
+AlwaysBreakBeforeMultilineStrings: false  # 多行字符串前不强制换行
+BreakAfterJavaFieldAnnotations: false     # Java 字段注解后不换行
+BreakBeforeBinaryOperators: None   # 二元运算符前不换行
+BreakBeforeTernaryOperators: true  # 三元运算符前换行
+BreakConstructorInitializers: BeforeColon  # 构造函数初始化列表在冒号前换行
+BreakInheritanceList: BeforeColon  # 继承列表在冒号前换行
+BreakStringLiterals: true          # 字符串字面量可以换行
+
+# ==============================================================================
+# 空格和间距
+# ==============================================================================
+SpaceAfterCStyleCast: false        # C 风格转换后不加空格
+SpaceAfterTemplateKeyword: true   # template 关键字后加空格
+SpaceBeforeAssignmentOperators: true  # 赋值运算符前加空格
+SpaceBeforeCpp11BracedList: false # C++11 大括号列表前不加空格
+SpaceBeforeCtorInitializerColon: true   # 构造函数初始化列表冒号前加空格
+SpaceBeforeInheritanceColon: true  # 继承列表冒号前加空格
+SpaceBeforeParens: ControlStatements  # 控制语句的括号前加空格
+SpaceBeforeRangeBasedForLoopColon: true  # 基于范围的 for 循环冒号前加空格
+SpaceInEmptyParentheses: false    # 空括号内不加空格
+SpacesBeforeTrailingComments: 1   # 行尾注释前加1个空格
+SpacesInAngles: false             # 尖括号内不加空格
+SpacesInCStyleCastParentheses: false  # C 风格转换括号内不加空格
+SpacesInContainerLiterals: false  # 容器字面量内不加空格
+SpacesInParentheses: false        # 括号内不加空格
+SpacesInSquareBrackets: false    # 方括号内不加空格
+
+# ==============================================================================
+# 指针和引用对齐
+# ==============================================================================
+PointerAlignment: Left             # 指针符号靠左：int* ptr
+ReferenceAlignment: Left          # 引用符号靠左：int& ref
+AlignConsecutiveAssignments: false # 不连续对齐赋值
+AlignConsecutiveDeclarations: false  # 不连续对齐声明
+AlignConsecutiveMacros: true      # 连续对齐宏定义的值
+AlignEscapedNewlines: Right       # 转义换行符右对齐
+AlignOperands: true               # 对齐操作数
+AlignTrailingComments: true        # 对齐尾随注释
+
+# ==============================================================================
+# 包含文件
+# ==============================================================================
+IncludeBlocks: Preserve            # 保持包含块的原始顺序
+IncludeCategories:
+  - Regex: '^"(llvm|llvm-c|clang|clang-c)/'
+    Priority: 2
+  - Regex: '^(<|"(gtest|gmock|isl|json)/)'
+    Priority: 3
+  - Regex: '.*'
+    Priority: 1
+IncludeIsMainRegex: '(Test|Tests)?$'  # 主文件的正则表达式
+IndentPPDirectives: None          # 预处理指令不缩进
+SortIncludes: false               # 不排序包含文件
+
+# ==============================================================================
+# 命名空间
+# ==============================================================================
+NamespaceIndentation: None        # 命名空间不缩进
+FixNamespaceComments: true        # 修复命名空间注释
+
+# ==============================================================================
+# 其他格式设置
+# ==============================================================================
+AllowShortBlocksOnASingleLine: false  # 不允许单行块
+AllowShortCaseLabelsOnASingleLine: false  # 不允许单行 case 标签
+AllowShortFunctionsOnASingleLine: Empty  # 只允许空函数单行
+AllowShortIfStatementsOnASingleLine: false  # 不允许单行 if 语句
+AllowShortLoopsOnASingleLine: false  # 不允许单行循环
+BinPackArguments: true            # 打包参数
+BinPackParameters: true           # 打包函数参数
+CompactNamespaces: false          # 不压缩命名空间
+ConstructorInitializerAllOnOneLineOrOnePerLine: false  # 构造函数初始化列表不强制单行
+DerivePointerAlignment: false    # 不推导指针对齐
+DisableFormat: false              # 不禁用格式化
+ExperimentalAutoDetectBinPacking: false  # 不自动检测参数打包
+ForEachMacros:                    # for-each 宏列表
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+KeepEmptyLinesAtTheStartOfBlocks: false  # 块开始不保留空行
+MacroBlockBegin: ''               # 宏块开始标记
+MacroBlockEnd: ''                 # 宏块结束标记
+MaxEmptyLinesToKeep: 1            # 保留的最大空行数：1
+ReflowComments: true              # 重新格式化注释
+SortUsingDeclarations: true       # 排序 using 声明
+StatementMacros:                  # 语句宏列表
+  - Q_UNUSED
+  - QT_REQUIRE_VERSION
+
+# ==============================================================================
+# 语言特定设置
+# ==============================================================================
+Language: Cpp                     # 语言：C++
+Standard: c++17                   # C++ 标准：C++17
+Cpp11BracedListStyle: false       # 不使用 C++11 大括号列表风格
+JavaScriptQuotes: Leave           # JavaScript 引号保持原样
+JavaScriptWrapImports: true       # JavaScript 导入换行
+ObjCBinPackProtocolList: Auto     # Objective-C 协议列表自动打包
+ObjCBlockIndentWidth: 2           # Objective-C 块缩进宽度
+ObjCSpaceAfterProperty: false    # Objective-C 属性后不加空格
+ObjCSpaceBeforeProtocolList: true # Objective-C 协议列表前加空格
+PenaltyBreakAssignment: 2        # 赋值换行惩罚
+PenaltyBreakBeforeFirstCallParameter: 1  # 第一个调用参数前换行惩罚
+PenaltyBreakComment: 300          # 注释换行惩罚
+PenaltyBreakString: 1000          # 字符串换行惩罚
+PenaltyBreakTemplateDeclaration: 10  # 模板声明换行惩罚
+PenaltyExcessCharacter: 1000000  # 超长字符惩罚
+PenaltyReturnTypeOnItsOwnLine: 200  # 返回类型单独一行惩罚
+
+# ==============================================================================
+# 注释格式
+# ==============================================================================
+CommentPragmas: '^ IWYU pragma:'  # 注释编译指示
+QualifierAlignment: Leave         # 限定符对齐：保持原样
