@@ -49,18 +49,25 @@
 #  define SERIAL_2_IRQ_HANDLER_DEF()        void USART2_IRQHandler(void)
 #endif
 
-#define SERIAL_3_ENABLE                     0
+#define SERIAL_3_ENABLE                     1
 #if SERIAL_3_ENABLE
 #  define SERIAL_3_USART                    USART3
 #  define SERIAL_3_IRQ_HANDLER_DEF()        void USART3_IRQHandler(void)
 #endif
 
+/* CAN */
+#define CAN1_ENABLE                         1
+#define CAN1_RX_PIN                         PB8
+#define CAN1_TX_PIN                         PB9
+#define CAN2_ENABLE                         0
+
+
 /* Wire (Software I2C) */
 #define WIRE_USE_FULL_SPEED_I2C             0
-#define WIRE1_SDA_PIN                        PB4
-#define WIRE1_SCL_PIN                        PB3
-#define WIRE2_SDA_PIN                        PA2
-#define WIRE2_SCL_PIN                        PA1
+#define WIRE1_SDA_PIN                       PB4
+#define WIRE1_SCL_PIN                       PB3
+#define WIRE2_SDA_PIN                       PA2
+#define WIRE2_SCL_PIN                       PA1
 #define WIRE_DELAY                          1
 #define WIRE_BEGIN_TIMEOUT                  100 // ms
 #define WIRE_BUFF_SIZE                      32
