@@ -124,18 +124,17 @@ class HardwareCAN
     // 发送 CAN 消息（简化接口）
     bool write(uint32_t id, uint8_t* data, uint8_t len, uint8_t id_type = CAN_STANDARD_FRAME);
 
-    // 读取 CAN 消息
-    // fifo: 接收 FIFO（CAN_RX_FIFO0 或 CAN_RX_FIFO1）
-    // 返回：true 成功，false 失败
-    bool read(CANMessage_t& message, uint8_t fifo = CAN_RX_FIFO0);
+    // 处理发送队列（非阻塞发送）
+    // 建议在主循环或周期性定时中调用
+    void processTxQueue(void);
 
     // 检查是否有接收到的消息
-    // fifo: 接收 FIFO（CAN_RX_FIFO0 或 CAN_RX_FIFO1）
     // 返回：待接收消息数量
-    uint8_t available(uint8_t fifo = CAN_RX_FIFO0);
+    uint8_t available(void);
 
-    // 释放接收 FIFO
-    void releaseFIFO(uint8_t fifo = CAN_RX_FIFO0);
+    // 读取 CAN 消息
+    // 返回：true 成功，false 失败
+    bool read(CANMessage_t& message);
 
     // 获取错误计数器
     uint8_t getReceiveErrorCounter(void);
@@ -143,6 +142,13 @@ class HardwareCAN
 
     // 获取错误状态
     can_error_record_type getErrorRecord(void);
+
+    // 自动识别总线波特率
+    // 原理：依次尝试常用波特率，在监听模式下检测是否能正确接收帧
+    // 注意：总线必须有其他节点在发送数据，否则无法识别
+    // timeout_per_rate_ms: 每个波特率的检测超时时间（毫秒）
+    // 返回：识别到的波特率，0 表示识别失败
+    uint32_t autoDetectBaudrate(uint32_t timeout_per_rate_ms = 100);
 
     // 开始统计总线占用率
     // use_precise_method: true 使用基于错误计数器的精确方法，false 使用基于帧统计的方法
@@ -161,29 +167,30 @@ class HardwareCAN
     // 获取总线统计信息
     void getStatistics(BusStatistics_t& stats);
 
-    // 自动识别总线波特率
-    // 原理：依次尝试常用波特率，在监听模式下检测是否能正确接收帧
-    // 注意：总线必须有其他节点在发送数据，否则无法识别
-    // timeout_per_rate_ms: 每个波特率的检测超时时间（毫秒）
-    // 返回：识别到的波特率，0 表示识别失败
-    uint32_t autoDetectBaudrate(uint32_t timeout_per_rate_ms = 100);
-
     operator bool()
     {
         return _initialized;
     }
-
-    // 中断处理函数
-    void IRQHandler(void);
 
   private:
     can_type* _CANx;
     can_base_type _can_base_struct;
 
     bool _initialized;
-
     uint32_t _baudrate;
     uint8_t _mode; // 当前工作模式
+
+    volatile uint16_t _rxbuffer_head;
+    volatile uint16_t _rxbuffer_tail;
+    can_rx_message_type _rx_message_buffer[CAN_RX_BUFFER_SIZE];
+
+    volatile uint16_t _txbuffer_head;
+    volatile uint16_t _txbuffer_tail;
+    can_tx_message_type _tx_message_buffer[CAN_TX_BUFFER_SIZE];
+
+    // 中断处理函数
+    void SE_IRQHandler(void);
+    void RX0_IRQHandler(void);
 
     // 总线统计
     BusStatistics_t _statistics;

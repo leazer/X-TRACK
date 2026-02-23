@@ -28,95 +28,107 @@
  *=========================*/
 
 /* System tick */
-#define SYSTICK_TICK_FREQ                   1000 // Hz
-#define SYSTICK_PRIORITY                    0
+#define SYSTICK_TICK_FREQ 1000 // Hz
+#define SYSTICK_PRIORITY  0
 
 /* Hardware Serial */
-#define SERIAL_RX_BUFFER_SIZE               512
-#define SERIAL_PREEMPTIONPRIORITY_DEFAULT   1
-#define SERIAL_SUBPRIORITY_DEFAULT          3
-#define SERIAL_CONFIG_DEFAULT               SERIAL_8N1
+#define SERIAL_RX_BUFFER_SIZE             512
+#define SERIAL_PREEMPTIONPRIORITY_DEFAULT 1
+#define SERIAL_SUBPRIORITY_DEFAULT        3
+#define SERIAL_CONFIG_DEFAULT             SERIAL_8N1
 
-#define SERIAL_1_ENABLE                     1
+#define SERIAL_1_ENABLE 1
 #if SERIAL_1_ENABLE
-#  define SERIAL_1_USART                    USART1
-#  define SERIAL_1_IRQ_HANDLER_DEF()        void USART1_IRQHandler(void)
+#define SERIAL_1_USART             USART1
+#define SERIAL_1_IRQ_HANDLER_DEF() void USART1_IRQHandler(void)
 #endif
 
-#define SERIAL_2_ENABLE                     1
+#define SERIAL_2_ENABLE 1
 #if SERIAL_2_ENABLE
-#  define SERIAL_2_USART                    USART2
-#  define SERIAL_2_IRQ_HANDLER_DEF()        void USART2_IRQHandler(void)
+#define SERIAL_2_USART             USART2
+#define SERIAL_2_IRQ_HANDLER_DEF() void USART2_IRQHandler(void)
 #endif
 
-#define SERIAL_3_ENABLE                     1
+#define SERIAL_3_ENABLE 1
 #if SERIAL_3_ENABLE
-#  define SERIAL_3_USART                    USART3
-#  define SERIAL_3_IRQ_HANDLER_DEF()        void USART3_IRQHandler(void)
+#define SERIAL_3_USART             USART3
+#define SERIAL_3_IRQ_HANDLER_DEF() void USART3_IRQHandler(void)
 #endif
 
 /* CAN */
-#define CAN1_ENABLE                         1
-#define CAN1_RX_PIN                         PB8
-#define CAN1_TX_PIN                         PB9
-#define CAN2_ENABLE                         0
+#define CAN_RX_BUFFER_SIZE 10
+#define CAN_TX_BUFFER_SIZE 10
 
+#define CAN1_ENABLE 1
+#if CAN1_ENABLE
+#define CAN1_RX_PIN                PB8
+#define CAN1_TX_PIN                PB9
+#define CAN1_SE_IRQ_HANDLER_DEF()  void CAN1_SE_IRQHandler(void)
+#define CAN1_RX0_IRQ_HANDLER_DEF() void CAN1_RX0_IRQHandler(void)
+#endif
+#define CAN2_ENABLE 0
+#if CAN2_ENABLE
+#define CAN2_RX_PIN                PB13
+#define CAN2_TX_PIN                PB12
+#define CAN2_SE_IRQ_HANDLER_DEF()  void CAN2_SE_IRQHandler(void)
+#define CAN2_RX0_IRQ_HANDLER_DEF() void CAN2_RX0_IRQHandler(void)
+#endif
 
 /* Wire (Software I2C) */
-#define WIRE_USE_FULL_SPEED_I2C             0
-#define WIRE1_SDA_PIN                       PB4
-#define WIRE1_SCL_PIN                       PB3
-#define WIRE2_SDA_PIN                       PA2
-#define WIRE2_SCL_PIN                       PA1
-#define WIRE_DELAY                          1
-#define WIRE_BEGIN_TIMEOUT                  100 // ms
-#define WIRE_BUFF_SIZE                      32
+#define WIRE_USE_FULL_SPEED_I2C 0
+#define WIRE1_SDA_PIN           PB4
+#define WIRE1_SCL_PIN           PB3
+#define WIRE2_SDA_PIN           PA2
+#define WIRE2_SCL_PIN           PA1
+#define WIRE_DELAY              1
+#define WIRE_BEGIN_TIMEOUT      100 // ms
+#define WIRE_BUFF_SIZE          32
 
 /* SPI Class */
-#define SPI_CLASS_AVR_COMPATIBILITY_MODE    1
-#define SPI_CLASS_PIN_DEFINE_ENABLE         0
+#define SPI_CLASS_AVR_COMPATIBILITY_MODE 1
+#define SPI_CLASS_PIN_DEFINE_ENABLE      0
 
-#define SPI_CLASS_1_ENABLE                  1
+#define SPI_CLASS_1_ENABLE 1
 #if SPI_CLASS_1_ENABLE
-#  define SPI_CLASS_1_SPI                   SPI1
+#define SPI_CLASS_1_SPI SPI1
 #endif
 
-#define SPI_CLASS_2_ENABLE                  1
+#define SPI_CLASS_2_ENABLE 1
 #if SPI_CLASS_2_ENABLE
-#  define SPI_CLASS_2_SPI                   SPI2
+#define SPI_CLASS_2_SPI SPI2
 #endif
 
-#define SPI_CLASS_3_ENABLE                  0
+#define SPI_CLASS_3_ENABLE 0
 #if SPI_CLASS_3_ENABLE
-#  define SPI_CLASS_3_SPI                   SPI3
+#define SPI_CLASS_3_SPI SPI3
 #endif
 
 /* WString */
-#define WSTRING_MEM_INCLUDE                 "lvgl/lvgl.h"
-#define WSTRING_MEM_REALLOC                 lv_mem_realloc
-#define WSTRING_MEM_FREE                    lv_mem_free
+#define WSTRING_MEM_INCLUDE "lvgl/lvgl.h"
+#define WSTRING_MEM_REALLOC lv_mem_realloc
+#define WSTRING_MEM_FREE    lv_mem_free
 
 /* Print */
-#define PRINT_PRINTF_BUFFER_LENGTH          128
+#define PRINT_PRINTF_BUFFER_LENGTH 128
 
 /* GPIO */
-#define GPIO_DRIVE_DEFAULT                  GPIO_DRIVE_STRENGTH_STRONGER
+#define GPIO_DRIVE_DEFAULT GPIO_DRIVE_STRENGTH_STRONGER
 
 /* External Interrupt  */
-#define EXTI_PREEMPTIONPRIORITY_DEFAULT     2
-#define EXTI_SUBPRIORITY_DEFAULT            1
+#define EXTI_PREEMPTIONPRIORITY_DEFAULT 2
+#define EXTI_SUBPRIORITY_DEFAULT        1
 
 /* Timer Interrupt */
-#define TIMER_PREEMPTIONPRIORITY_DEFAULT    0
-#define TIMER_SUBPRIORITY_DEFAULT           3
+#define TIMER_PREEMPTIONPRIORITY_DEFAULT 0
+#define TIMER_SUBPRIORITY_DEFAULT        3
 
 /* Tone */
-#define TONE_TIMER_DEFAULT                  TIM1
-#define TONE_PREEMPTIONPRIORITY_DEFAULT     0
-#define TONE_SUBPRIORITY_DEFAULT            1
+#define TONE_TIMER_DEFAULT              TIM1
+#define TONE_PREEMPTIONPRIORITY_DEFAULT 0
+#define TONE_SUBPRIORITY_DEFAULT        1
 
 /* PWM */
-#define PWM_RESOLUTION_DEFAULT              1000
-#define PWM_FREQUENCY_DEFAULT               10000
+#define PWM_RESOLUTION_DEFAULT 1000
+#define PWM_FREQUENCY_DEFAULT  10000
 
 #endif

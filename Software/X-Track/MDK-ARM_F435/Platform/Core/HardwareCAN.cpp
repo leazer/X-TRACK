@@ -53,11 +53,14 @@ static const CanTimingConfig s_timing_875 = { CAN_BTS1_13TQ, CAN_BTS2_2TQ, 16 };
  */
 HardwareCAN::HardwareCAN(can_type* can)
     : _CANx(can), _initialized(false), _baudrate(0), _mode(CAN_MODE_LISTEN_ONLY),
-      _statistics_enabled(false), _sample_index(0), _window_start_time_ms(0)
+      _statistics_enabled(false), _sample_index(0), _window_start_time_ms(0), _rxbuffer_head(0),
+      _rxbuffer_tail(0), _txbuffer_head(0), _txbuffer_tail(0)
 {
     // 初始化统计结构
     memset(&_statistics, 0, sizeof(_statistics));
     memset(_sample_buffer, 0, sizeof(_sample_buffer));
+    memset(_rx_message_buffer, 0, sizeof(_rx_message_buffer));
+    memset(_tx_message_buffer, 0, sizeof(_tx_message_buffer));
 }
 
 /**
@@ -137,84 +140,6 @@ bool HardwareCAN::calculateBaudrate(uint32_t baudrate, can_baudrate_type* baudra
 }
 
 /**
- * @brief  自动识别总线波特率
- * @param  timeout_per_rate_ms: 每个波特率的检测超时时间（毫秒）
- * @retval 识别到的波特率，0 表示识别失败
- *
- * 原理说明：
- * 1. 依次尝试常用波特率，每次以监听模式初始化
- * 2. 设置全通过滤器以接收任意帧
- * 3. 在超时时间内统计接收帧数和错误计数器
- * 4. 当波特率正确时：能正确接收帧，接收错误计数器(REC)保持低位
- * 5. 当波特率错误时：无法正确解码，REC 会持续增加
- *
- * 注意：总线必须有其他节点在发送数据，否则无法识别
- */
-uint32_t HardwareCAN::autoDetectBaudrate(uint32_t timeout_per_rate_ms)
-{
-    if (!_initialized)
-        return 0;
-
-    // 切换到监听模式（不发送 ACK，仅接收）
-    if (!setMode(CAN_MODE_LISTEN_ONLY))
-        return 0;
-
-    uint32_t detected_baudrate = 0;
-    can_baudrate_type can_baudrate_struct;
-
-    for (uint8_t i = s_can_baudrate_table_size - 1; i >= 0; i--) // 从高到低尝试
-    {
-        uint32_t baudrate = s_can_baudrate_table[i];
-
-        // 计算并设置波特率
-        if (!setBaudrate(baudrate))
-            continue;
-
-        // 设置全通过滤器：接受标准帧和扩展帧
-        setFilter(0, 0, 0, CAN_STANDARD_FRAME, CAN_RX_FIFO0);
-        setFilter(1, 0, 0, CAN_EXTENDED_FRAME, CAN_RX_FIFO0);
-
-        // 记录初始错误计数器
-        uint8_t rec_initial = getReceiveErrorCounter();
-
-        // 等待并统计接收帧
-        uint32_t start_time = millis();
-        uint32_t rx_count = 0;
-        CANMessage_t msg;
-
-        while ((millis() - start_time) < timeout_per_rate_ms)
-        {
-            // 读取并统计有效接收的帧
-            while (read(msg, CAN_RX_FIFO0))
-            {
-                rx_count++;
-            }
-            while (read(msg, CAN_RX_FIFO1))
-            {
-                rx_count++;
-            }
-
-            delay(5); // 短暂延时，避免忙等
-        }
-
-        uint8_t rec_final = getReceiveErrorCounter();
-
-        // 判断是否识别成功：
-        // 1. 至少接收到 1 帧有效数据
-        // 2. 接收错误计数器未显著增加（REC < 128 表示未进入错误被动）
-        if (rx_count > 0 && rec_final < 128)
-        {
-            detected_baudrate = baudrate;
-
-            _baudrate = baudrate;
-            return detected_baudrate;
-        }
-    }
-
-    return 0;
-}
-
-/**
  * @brief  初始化 CAN
  * @param  baudrate: 波特率（bps）
  * @param  tx_pin: TX 引脚（PA12/PB9 等），PIN_MAX 使用默认
@@ -229,62 +154,44 @@ bool HardwareCAN::begin(uint32_t baudrate, Pin_TypeDef tx_pin, Pin_TypeDef rx_pi
 {
     gpio_init_type gpio_init_struct;
     can_baudrate_type can_baudrate_struct;
-
-    if (_CANx == NULL)
+    Pin_TypeDef tx_actual;
+    Pin_TypeDef rx_actual;
+    /* as specified in CAN protocol, the maximum allowable oscillator tolerance is 1.58%.
+       The HICK accuracy does not meet the clock requirements in CAN protocol. to guarantee normal
+       communication, it is recommended to use HEXT as the system clock source. */
+    if (_CANx == NULL || crm_flag_get(CRM_HEXT_STABLE_FLAG) != SET)
         return false;
 
-    crm_periph_clock_enable(_CANx == CAN1 ? CRM_CAN1_PERIPH_CLOCK : CRM_CAN2_PERIPH_CLOCK, TRUE);
-
-    Pin_TypeDef def_tx1 = PA12, def_rx1 = PA11;
-    Pin_TypeDef def_tx2 = PB13, def_rx2 = PB12;
-    Pin_TypeDef tx_actual, rx_actual;
     if (_CANx == CAN1)
     {
-        tx_actual = (tx_pin != PIN_MAX) ? tx_pin : def_tx1;
-        rx_actual = (rx_pin != PIN_MAX) ? rx_pin : def_rx1;
+        crm_periph_clock_enable(CRM_CAN1_PERIPH_CLOCK, TRUE);
+        tx_actual = (tx_pin != PIN_MAX) ? tx_pin : PA12;
+        rx_actual = (rx_pin != PIN_MAX) ? rx_pin : PA11;
     }
     else
     {
-        tx_actual = (tx_pin != PIN_MAX) ? tx_pin : def_tx2;
-        rx_actual = (rx_pin != PIN_MAX) ? rx_pin : def_rx2;
+        crm_periph_clock_enable(CRM_CAN2_PERIPH_CLOCK, TRUE);
+        tx_actual = (tx_pin != PIN_MAX) ? tx_pin : PB13;
+        rx_actual = (rx_pin != PIN_MAX) ? rx_pin : PB12;
     }
 
-    gpio_type* tx_port = digitalPinToPort(tx_actual);
-    gpio_type* rx_port = digitalPinToPort(rx_actual);
     uint16_t tx_bit = digitalPinToBitMask(tx_actual);
     uint16_t rx_bit = digitalPinToBitMask(rx_actual);
-    gpio_pins_source_type tx_src = GPIO_GetPinSource(tx_bit);
-    gpio_pins_source_type rx_src = GPIO_GetPinSource(rx_bit);
 
-    if (tx_port == GPIOA || rx_port == GPIOA)
-        crm_periph_clock_enable(CRM_GPIOA_PERIPH_CLOCK, TRUE);
-    else if (tx_port == GPIOB || rx_port == GPIOB)
-        crm_periph_clock_enable(CRM_GPIOB_PERIPH_CLOCK, TRUE);
-    else if (tx_port == GPIOC || rx_port == GPIOC)
-        crm_periph_clock_enable(CRM_GPIOC_PERIPH_CLOCK, TRUE);
-    else if (tx_port == GPIOD || rx_port == GPIOD)
-        crm_periph_clock_enable(CRM_GPIOD_PERIPH_CLOCK, TRUE);
+    GPIOx_Init(digitalPinToPort(tx_actual), tx_bit, OUTPUT_AF_PP, GPIO_DRIVE_STRENGTH_STRONGER);
+    GPIOx_Init(digitalPinToPort(rx_actual), rx_bit, OUTPUT_AF_PP, GPIO_DRIVE_STRENGTH_STRONGER);
 
-    gpio_default_para_init(&gpio_init_struct);
-    gpio_init_struct.gpio_mode = GPIO_MODE_MUX;
-    gpio_init_struct.gpio_out_type = GPIO_OUTPUT_PUSH_PULL;
-    gpio_init_struct.gpio_pull = GPIO_PULL_NONE;
-    gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
-    gpio_init_struct.gpio_pins = tx_bit;
-    gpio_init(tx_port, &gpio_init_struct);
-    gpio_init_struct.gpio_pins = rx_bit;
-    gpio_init(rx_port, &gpio_init_struct);
-    gpio_pin_mux_config(tx_port, tx_src, GPIO_MUX_9);
-    gpio_pin_mux_config(rx_port, rx_src, GPIO_MUX_9);
+    gpio_pin_mux_config(digitalPinToPort(tx_actual), GPIO_GetPinSource(tx_bit), GPIO_MUX_9);
+    gpio_pin_mux_config(digitalPinToPort(rx_actual), GPIO_GetPinSource(rx_bit), GPIO_MUX_9);
 
     // 复位 CAN
     can_reset(_CANx);
 
-    // 配置 CAN 基参数（默认通讯模式）
+    // 配置 CAN 基参数（默认监听模式，必要时可通过 setMode 切到通讯模式）
     _can_base_struct.mode_selection = CAN_MODE_LISTENONLY;
     _can_base_struct.ttc_enable = FALSE;
     _can_base_struct.aebo_enable = TRUE; // 自动退出总线关闭模式
-    _can_base_struct.aed_enable = FALSE;
+    _can_base_struct.aed_enable = TRUE;
     _can_base_struct.prsf_enable = FALSE;
     _can_base_struct.mdrsel_selection = CAN_DISCARDING_FIRST_RECEIVED;
     _can_base_struct.mmssr_selection = CAN_SENDING_BY_ID;
@@ -293,8 +200,28 @@ bool HardwareCAN::begin(uint32_t baudrate, Pin_TypeDef tx_pin, Pin_TypeDef rx_pi
         return false;
 
     // 计算并设置波特率
-    if (!setBaudrate(baudrate))
+    if (!calculateBaudrate(baudrate, &can_baudrate_struct))
         return false;
+    if (can_baudrate_set(_CANx, &can_baudrate_struct) != SUCCESS)
+        return false;
+    _baudrate = baudrate;
+
+    /* can interrupt config */
+    if (_CANx == CAN1)
+    {
+        nvic_irq_enable(CAN1_SE_IRQn, 0x00, 0x00);
+        nvic_irq_enable(CAN1_RX0_IRQn, 0x00, 0x00);
+    }
+    else
+    {
+        nvic_irq_enable(CAN2_SE_IRQn, 0x00, 0x00);
+        nvic_irq_enable(CAN2_RX0_IRQn, 0x00, 0x00);
+    }
+    can_interrupt_enable(_CANx, CAN_RF0MIEN_INT, TRUE);
+
+    /* error interrupt enable */
+    can_interrupt_enable(_CANx, CAN_ETRIEN_INT, TRUE);
+    can_interrupt_enable(_CANx, CAN_EOIEN_INT, TRUE);
 
     _initialized = true;
 
@@ -309,6 +236,21 @@ void HardwareCAN::end(void)
 {
     if (!_initialized)
         return;
+
+    if (_CANx == CAN1)
+    {
+        nvic_irq_disable(CAN1_SE_IRQn, 0x00, 0x00);
+        nvic_irq_disable(CAN1_RX0_IRQn, 0x00, 0x00);
+    }
+    else
+    {
+        nvic_irq_disable(CAN2_SE_IRQn, 0x00, 0x00);
+        nvic_irq_disable(CAN2_RX0_IRQn, 0x00, 0x00);
+    }
+    can_interrupt_enable(_CANx, CAN_RF0MIEN_INT, FALSE);
+    can_interrupt_enable(_CANx, CAN_ETRIEN_INT, FALSE);
+    can_interrupt_enable(_CANx, CAN_EOIEN_INT, FALSE);
+
     // 复位 CAN
     can_reset(_CANx);
     _initialized = false;
@@ -423,46 +365,46 @@ uint32_t HardwareCAN::getBaudrate(void)
 }
 
 /**
- * @brief  发送 CAN 消息
+ * @brief  发送 CAN 消息（入队，实际发送由 processTxQueue 执行）
  * @param  message: CAN 消息结构体
- * @retval true 成功，false 失败
+ * @retval true 成功入队，false 失败（队列满或未初始化）
  */
 bool HardwareCAN::write(const CANMessage_t& message)
 {
-    can_tx_message_type tx_message;
-
     if (!_initialized || _mode == CAN_MODE_LISTEN_ONLY || message.dlc > 8)
         return false;
+
+    uint16_t next = (_txbuffer_head + 1U) % CAN_TX_BUFFER_SIZE;
+    if (next == _txbuffer_tail)
+    {
+        // 发送队列已满
+        return false;
+    }
+
+    can_tx_message_type& tx = _tx_message_buffer[_txbuffer_head];
 
     // 填充发送消息结构体
     if (message.id_type == CAN_STANDARD_FRAME)
     {
-        tx_message.standard_id = message.id & 0x7FF;
-        tx_message.extended_id = 0;
+        tx.standard_id = message.id & 0x7FF;
+        tx.extended_id = 0;
     }
     else
     {
-        tx_message.standard_id = 0;
-        tx_message.extended_id = message.id & 0x1FFFFFFF;
+        tx.standard_id = 0;
+        tx.extended_id = message.id & 0x1FFFFFFF;
     }
 
-    tx_message.id_type = (can_identifier_type)message.id_type;
-    tx_message.frame_type = (can_trans_frame_type)message.frame_type;
-    tx_message.dlc = message.dlc;
+    tx.id_type = (can_identifier_type)message.id_type;
+    tx.frame_type = (can_trans_frame_type)message.frame_type;
+    tx.dlc = message.dlc;
 
     for (uint8_t i = 0; i < message.dlc; i++)
     {
-        tx_message.data[i] = message.data[i];
+        tx.data[i] = message.data[i];
     }
 
-    // 发送消息
-    uint8_t mailbox = can_message_transmit(_CANx, &tx_message);
-
-    if (mailbox == 0xFF)
-        return false; // 所有邮箱都满了
-
-    // 更新发送统计
-    updateTxStatistics(message.dlc);
+    _txbuffer_head = next;
 
     return true;
 }
@@ -493,23 +435,49 @@ bool HardwareCAN::write(uint32_t id, uint8_t* data, uint8_t len, uint8_t id_type
 }
 
 /**
+ * @brief  处理发送队列（非阻塞）
+ *         将队列中的待发帧尽可能填入硬件邮箱
+ * @retval 无
+ */
+void HardwareCAN::processTxQueue(void)
+{
+    if (!_initialized || _mode == CAN_MODE_LISTEN_ONLY)
+        return;
+
+    while (_txbuffer_tail != _txbuffer_head)
+    {
+        can_tx_message_type& tx = _tx_message_buffer[_txbuffer_tail];
+
+        uint8_t mailbox = can_message_transmit(_CANx, &tx);
+        if (mailbox == CAN_TX_STATUS_NO_EMPTY)
+        {
+            // 没有空邮箱了，等待下次调用
+            break;
+        }
+
+        // 成功放入邮箱，移动队列尾
+        _txbuffer_tail = (_txbuffer_tail + 1U) % CAN_TX_BUFFER_SIZE;
+        updateTxStatistics(tx.dlc);
+    }
+}
+
+/**
  * @brief  读取 CAN 消息
  * @param  message: 输出消息结构体
  * @param  fifo: 接收 FIFO
  * @retval true 成功，false 失败
  */
-bool HardwareCAN::read(CANMessage_t& message, uint8_t fifo)
+bool HardwareCAN::read(CANMessage_t& message)
 {
-    can_rx_message_type rx_message;
-
     if (!_initialized)
         return false;
-
-    if (available(fifo) == 0)
+    if (_rxbuffer_head == _rxbuffer_tail)
         return false;
 
-    // 读取消息
-    can_message_receive(_CANx, (can_rx_fifo_num_type)fifo, &rx_message);
+    // 从环形缓冲区读取一帧
+    uint16_t tail = _rxbuffer_tail;
+    can_rx_message_type rx_message = _rx_message_buffer[tail];
+    _rxbuffer_tail = (tail + 1U) % CAN_RX_BUFFER_SIZE;
 
     // 填充消息结构体
     if (rx_message.id_type == CAN_ID_STANDARD)
@@ -531,12 +499,6 @@ bool HardwareCAN::read(CANMessage_t& message, uint8_t fifo)
         message.data[i] = rx_message.data[i];
     }
 
-    // 释放 FIFO
-    can_receive_fifo_release(_CANx, (can_rx_fifo_num_type)fifo);
-
-    // 更新接收统计
-    updateRxStatistics(message.dlc);
-
     return true;
 }
 
@@ -545,25 +507,17 @@ bool HardwareCAN::read(CANMessage_t& message, uint8_t fifo)
  * @param  fifo: 接收 FIFO
  * @retval 待接收消息数量
  */
-uint8_t HardwareCAN::available(uint8_t fifo)
+uint8_t HardwareCAN::available(void)
 {
     if (!_initialized)
         return 0;
 
-    return can_receive_message_pending_get(_CANx, (can_rx_fifo_num_type)fifo);
-}
-
-/**
- * @brief  释放接收 FIFO
- * @param  fifo: 接收 FIFO
- * @retval 无
- */
-void HardwareCAN::releaseFIFO(uint8_t fifo)
-{
-    if (!_initialized)
-        return;
-
-    can_receive_fifo_release(_CANx, (can_rx_fifo_num_type)fifo);
+    // 环形缓冲中的帧数
+    uint16_t head = _rxbuffer_head;
+    uint16_t tail = _rxbuffer_tail;
+    if (head >= tail)
+        return (uint8_t)(head - tail);
+    return (uint8_t)(CAN_RX_BUFFER_SIZE - (tail - head));
 }
 
 /**
@@ -600,6 +554,84 @@ can_error_record_type HardwareCAN::getErrorRecord(void)
         return CAN_ERRORRECORD_NOERR;
 
     return can_error_type_record_get(_CANx);
+}
+
+/**
+ * @brief  自动识别总线波特率
+ * @param  timeout_per_rate_ms: 每个波特率的检测超时时间（毫秒）
+ * @retval 识别到的波特率，0 表示识别失败
+ *
+ * 原理说明：
+ * 1. 依次尝试常用波特率，每次以监听模式初始化
+ * 2. 设置全通过滤器以接收任意帧
+ * 3. 在超时时间内统计接收帧数和错误计数器
+ * 4. 当波特率正确时：能正确接收帧，接收错误计数器(REC)保持低位
+ * 5. 当波特率错误时：无法正确解码，REC 会持续增加
+ *
+ * 注意：总线必须有其他节点在发送数据，否则无法识别
+ */
+uint32_t HardwareCAN::autoDetectBaudrate(uint32_t timeout_per_rate_ms)
+{
+    if (!_initialized)
+        return 0;
+
+    // 切换到监听模式（不发送 ACK，仅接收）
+    if (!setMode(CAN_MODE_LISTEN_ONLY))
+        return 0;
+
+    uint32_t detected_baudrate = 0;
+
+    // 从高到低尝试常用波特率
+    for (int8_t i = (int8_t)s_can_baudrate_table_size - 1; i >= 0; i--)
+    {
+        uint32_t baudrate = s_can_baudrate_table[i];
+
+        // 计算并设置波特率
+        if (!setBaudrate(baudrate))
+            continue;
+
+        // 设置全通过滤器：接受标准帧和扩展帧
+        setFilter(0, 0, 0, CAN_STANDARD_FRAME, CAN_RX_FIFO0);
+        setFilter(1, 0, 0, CAN_EXTENDED_FRAME, CAN_RX_FIFO0);
+
+        // 记录初始错误计数器
+        uint8_t rec_initial = getReceiveErrorCounter();
+
+        // 等待并统计接收帧
+        uint32_t start_time = millis();
+        uint32_t rx_count = 0;
+        CANMessage_t msg;
+
+        while ((millis() - start_time) < timeout_per_rate_ms)
+        {
+            // 读取并统计有效接收的帧
+            while (read(msg))
+            {
+                rx_count++;
+            }
+            while (read(msg))
+            {
+                rx_count++;
+            }
+
+            delay(5); // 短暂延时，避免忙等
+        }
+
+        uint8_t rec_final = getReceiveErrorCounter();
+
+        // 判断是否识别成功：
+        // 1. 至少接收到 1 帧有效数据
+        // 2. 接收错误计数器未显著增加（REC < 128 表示未进入错误被动）
+        if (rx_count > 0 && rec_final < 128)
+        {
+            detected_baudrate = baudrate;
+
+            _baudrate = baudrate;
+            return detected_baudrate;
+        }
+    }
+
+    return 0;
 }
 
 /**
@@ -859,20 +891,99 @@ void HardwareCAN::calculateBusUsage(void)
 }
 
 /**
- * @brief  CAN 中断处理函数
+ * @brief  CAN 状态/错误中断处理函数
  * @retval 无
  */
-void HardwareCAN::IRQHandler(void)
+void HardwareCAN::SE_IRQHandler(void)
 {
-    // 可以在这里添加中断处理逻辑
-    // 例如：接收中断、发送完成中断、错误中断等
+    // 1. 错误发生中断（总入口）
+    if (can_interrupt_flag_get(_CANx, CAN_EOIF_FLAG) == SET)
+    {
+        can_error_record_type err = can_error_type_record_get(_CANx);
+        if (err != CAN_ERRORRECORD_NOERR)
+        {
+            _statistics.error_frames++;
+        }
+
+        // 同时清除错误发生与错误类型记录标志
+        can_flag_clear(_CANx, CAN_ETR_FLAG);
+        can_flag_clear(_CANx, CAN_EOIF_FLAG);
+    }
+
+    // 2. 错误活动/被动状态变化
+    if (can_interrupt_flag_get(_CANx, CAN_EAF_FLAG) == SET)
+    {
+        // 从错误被动/总线关闭恢复为错误活动
+        can_flag_clear(_CANx, CAN_EAF_FLAG);
+    }
+
+    if (can_interrupt_flag_get(_CANx, CAN_EPF_FLAG) == SET)
+    {
+        // 进入错误被动状态
+        can_flag_clear(_CANx, CAN_EPF_FLAG);
+    }
+
+    // 3. 总线关闭（bus-off）
+    if (can_interrupt_flag_get(_CANx, CAN_BOF_FLAG) == SET)
+    {
+        // 进入总线关闭状态，统计一次错误帧
+        _statistics.error_frames++;
+        can_flag_clear(_CANx, CAN_BOF_FLAG);
+    }
+}
+
+/**
+ * @brief  RX0 中断处理（接收 FIFO0，写入环形缓冲）
+ */
+void HardwareCAN::RX0_IRQHandler(void)
+{
+    if (can_interrupt_flag_get(_CANx, CAN_RF0MN_FLAG) != RESET)
+    {
+        uint16_t next = (_rxbuffer_head + 1U) % CAN_RX_BUFFER_SIZE;
+
+        if (next != _rxbuffer_tail)
+        {
+            // 正常写入环形缓冲
+            can_rx_message_type* dst = &_rx_message_buffer[_rxbuffer_head];
+            can_message_receive(_CANx, (can_rx_fifo_num_type)CAN_RX_FIFO0, dst);
+            updateRxStatistics(dst->dlc);
+            _rxbuffer_head = next;
+        }
+        else
+        {
+            // 缓冲区满，丢弃最新帧，以免阻塞硬件 FIFO
+            can_rx_message_type dummy;
+            can_message_receive(_CANx, (can_rx_fifo_num_type)CAN_RX_FIFO0, &dummy);
+            _statistics.error_frames++;
+        }
+    }
 }
 
 // 预定义 CAN 实例
-#ifdef CAN1_ENABLE
+#if CAN1_ENABLE
+
 HardwareCAN Can1(CAN1);
+extern "C" CAN1_SE_IRQ_HANDLER_DEF()
+{
+    Can1.SE_IRQHandler();
+}
+
+extern "C" CAN1_RX0_IRQ_HANDLER_DEF()
+{
+    Can1.RX0_IRQHandler();
+}
 #endif
 
-#ifdef CAN2_ENABLE
+#if CAN2_ENABLE
 HardwareCAN Can2(CAN2);
+
+extern "C" CAN2_SE_IRQ_HANDLER_DEF()
+{
+    Can2.SE_IRQHandler();
+}
+
+extern "C" CAN2RX0_IRQ_HANDLER_DEF()
+{
+    Can2.RX0_IRQHandler();
+}
 #endif
