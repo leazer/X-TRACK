@@ -31,11 +31,11 @@
             <ModeSub name="CAN_Activate" value="TRUE"/>
         </Mode>
         <Parameters>
-            <ParametersSub name="BaudRate" value="500"/>
-            <ParametersSub name="Sample_Point" value="87.5"/>
-            <ParametersSub name="BaudRate_Division" value="36"/>
-            <ParametersSub name="BTS1" value="CAN_BTS1_6TQ"/>
-            <ParametersSub name="BTS2" value="CAN_BTS2_1TQ"/>
+            <ParametersSub name="BaudRate" value="1000"/>
+            <ParametersSub name="Sample_Point" value="75.0"/>
+            <ParametersSub name="BaudRate_Division" value="12"/>
+            <ParametersSub name="BTS1" value="CAN_BTS1_8TQ"/>
+            <ParametersSub name="BTS2" value="CAN_BTS2_3TQ"/>
             <ParametersSub name="RSAW" value="CAN_RSAW_1TQ"/>
         </Parameters>
     </CAN1>
@@ -300,7 +300,7 @@
     </PINInfo>
     <ProjectInfomation>
         <ProjectName>AT32F435CGT7_WorkBench</ProjectName>
-        <ProjectLocation>D:/ChipInfomation/AT32/X-TRACK/Hardware</ProjectLocation>
+        <ProjectLocation>D:/AT32/X-TRACK/Hardware</ProjectLocation>
         <ToolchainIDE>MDK_V5</ToolchainIDE>
         <ARMCompiler>0</ARMCompiler>
         <BackupCode>true</BackupCode>

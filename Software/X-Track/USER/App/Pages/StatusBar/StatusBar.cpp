@@ -24,6 +24,7 @@
 #include "../Page.h"
 #include "Common/DataProc/DataProc.h"
 #include "Utils/lv_anim_label/lv_anim_label.h"
+#include "HAL/HAL.h"
 
 #define BATT_USAGE_HEIGHT (lv_obj_get_style_height(ui.battery.img, 0) - 6)
 #define BATT_USAGE_WIDTH (lv_obj_get_style_width(ui.battery.img, 0) - 4)
@@ -35,9 +36,6 @@
 #define CONFIG_SLIDER_HEIGHT 30
 
 static Account *actStatusBar;
-
-// 配置窗口相关变量
-static lv_obj_t *configWindow = nullptr;
 
 // 配置窗口滑块事件处理 - 关机
 static void StatusBar_OnPowerSliderChange(lv_event_t *e);
@@ -84,6 +82,8 @@ struct
         lv_obj_t *objUsage;
         lv_obj_t *label;
     } battery;
+    lv_obj_t *configWindow;
+
 } ui;
 
 static void StatusBar_ConBattSetOpa(lv_obj_t *obj, int32_t opa)
@@ -171,8 +171,8 @@ static void StatusBar_OnPowerSliderChange(lv_event_t *e)
     // 拖动过程中检查是否达到90%，达到立即关机
     if (code == LV_EVENT_RELEASED && value >= 95)
     {
-        // TODO: 调用关机函数
         // HAL::Power_Shutdown();
+        // HAL::Audio_PlayMusic("Shutdown");
     }
     // 松手事件：如果没有达到90%，自动归零
     else if (code == LV_EVENT_RELEASED && value < 90)
@@ -204,10 +204,10 @@ static void StatusBar_OnVolumeSliderChange(lv_event_t *e)
 // 关闭配置窗口
 static void StatusBar_ConfigWindowClose()
 {
-    if (configWindow != nullptr)
+    if (ui.configWindow != nullptr)
     {
-        lv_obj_del(configWindow);
-        configWindow = nullptr;
+        lv_obj_del(ui.configWindow);
+        ui.configWindow = nullptr;
     }
     // 获取statusbar容器的父对象（通常是屏幕）
     lv_obj_t *par = lv_obj_get_parent(ui.cont);
@@ -220,7 +220,7 @@ static void StatusBar_ConfigWindowClose()
 // 创建配置窗口
 static void StatusBar_ConfigWindowCreate(void)
 {
-    if (configWindow != nullptr)
+    if (ui.configWindow != nullptr)
     {
         return; // 已经存在配置窗口
     }
@@ -232,22 +232,22 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_flag(par, LV_OBJ_FLAG_CLICKABLE);
 
     // 创建主容器
-    configWindow = lv_obj_create(par);
-    lv_obj_set_size(configWindow, CONFIG_WINDOW_WIDTH, CONFIG_WINDOW_HEIGHT);
-    lv_obj_center(configWindow);
-    lv_obj_set_style_bg_color(configWindow, lv_color_hex(0x2a2a2a), 0);
-    lv_obj_set_style_bg_opa(configWindow, LV_OPA_100, 0);
-    lv_obj_set_style_border_color(configWindow, lv_color_hex(0x555555), 0);
-    lv_obj_set_style_border_width(configWindow, 1, 0);
-    lv_obj_set_style_radius(configWindow, 10, 0);
-    lv_obj_set_style_pad_all(configWindow, 10, 0);
-    lv_obj_clear_flag(configWindow, LV_OBJ_FLAG_SCROLLABLE);
+    ui.configWindow = lv_obj_create(par);
+    lv_obj_set_size(ui.configWindow, CONFIG_WINDOW_WIDTH, CONFIG_WINDOW_HEIGHT);
+    lv_obj_center(ui.configWindow);
+    lv_obj_set_style_bg_color(ui.configWindow, lv_color_hex(0x2a2a2a), 0);
+    lv_obj_set_style_bg_opa(ui.configWindow, LV_OPA_100, 0);
+    lv_obj_set_style_border_color(ui.configWindow, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_border_width(ui.configWindow, 1, 0);
+    lv_obj_set_style_radius(ui.configWindow, 10, 0);
+    lv_obj_set_style_pad_all(ui.configWindow, 10, 0);
+    lv_obj_clear_flag(ui.configWindow, LV_OBJ_FLAG_SCROLLABLE);
 
     // 标签样式
     static lv_style_t style_label;
     lv_style_init(&style_label);
     lv_style_set_text_color(&style_label, lv_color_white());
-    lv_style_set_text_font(&style_label, ResourcePool::GetFont("bahnschrift_13"));
+    lv_style_set_text_font(&style_label, ResourcePool::GetFont("bahnschrift_17"));
 
     // 滑块样式
     static lv_style_t style_slider_main;
@@ -272,19 +272,19 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_style_set_radius(&style_slider_knob, 10);
 
     // 标题
-    lv_obj_t *title = lv_label_create(configWindow);
+    lv_obj_t *title = lv_label_create(ui.configWindow);
     lv_obj_add_style(title, &style_label, 0);
     lv_label_set_text(title, "syssetting");
     lv_obj_set_width(title, CONFIG_WINDOW_WIDTH - 20);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 0);
 
     // 关机滑块
-    lv_obj_t *label_power = lv_label_create(configWindow);
+    lv_obj_t *label_power = lv_label_create(ui.configWindow);
     lv_obj_add_style(label_power, &style_label, 0);
     lv_label_set_text(label_power, "powerdown");
     lv_obj_align(label_power, LV_ALIGN_TOP_LEFT, 0, 30);
 
-    lv_obj_t *slider_power = lv_slider_create(configWindow);
+    lv_obj_t *slider_power = lv_slider_create(ui.configWindow);
     lv_obj_set_width(slider_power, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_power, 24);
     lv_slider_set_range(slider_power, 0, 100);
@@ -297,12 +297,12 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_RELEASED, nullptr);
 
     // 亮度滑块
-    lv_obj_t *label_brightness = lv_label_create(configWindow);
+    lv_obj_t *label_brightness = lv_label_create(ui.configWindow);
     lv_obj_add_style(label_brightness, &style_label, 0);
     lv_label_set_text(label_brightness, "light");
     lv_obj_align(label_brightness, LV_ALIGN_TOP_LEFT, 0, 80);
 
-    lv_obj_t *slider_brightness = lv_slider_create(configWindow);
+    lv_obj_t *slider_brightness = lv_slider_create(ui.configWindow);
     lv_obj_set_width(slider_brightness, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_brightness, 4);
     lv_slider_set_range(slider_brightness, 0, 100);
@@ -314,12 +314,12 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_event_cb(slider_brightness, StatusBar_OnBrightnessSliderChange, LV_EVENT_VALUE_CHANGED, nullptr);
 
     // 音量滑块
-    lv_obj_t *label_volume = lv_label_create(configWindow);
+    lv_obj_t *label_volume = lv_label_create(ui.configWindow);
     lv_obj_add_style(label_volume, &style_label, 0);
     lv_label_set_text(label_volume, "volume");
     lv_obj_align(label_volume, LV_ALIGN_TOP_LEFT, 0, 130);
 
-    lv_obj_t *slider_volume = lv_slider_create(configWindow);
+    lv_obj_t *slider_volume = lv_slider_create(ui.configWindow);
     lv_obj_set_width(slider_volume, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_volume, 4);
     lv_slider_set_range(slider_volume, 0, 100);
@@ -336,7 +336,7 @@ static void StatusBar_OnBatteryClick(lv_event_t *e)
 {
     if (e->code == LV_EVENT_CLICKED)
     {
-        if (configWindow == nullptr)
+        if (ui.configWindow == nullptr)
         {
             StatusBar_ConfigWindowCreate();
         }
@@ -356,7 +356,7 @@ static void StatusBar_OnConfigWindowBgClick(lv_event_t *e)
         lv_obj_t *clicked_obj = lv_event_get_target(e);
 
         // 如果点击的是背景而不是窗口，关闭窗口
-        if (clicked_obj != configWindow)
+        if (clicked_obj != ui.configWindow)
         {
             StatusBar_ConfigWindowClose();
         }
