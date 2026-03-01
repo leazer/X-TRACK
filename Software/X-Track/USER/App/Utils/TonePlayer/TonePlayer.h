@@ -59,6 +59,7 @@ public:
     void Stop();
     void SetSpeed(uint16_t speed);
     bool Update(uint32_t tick);
+    bool IsPlaying();
 private:
     uint16_t Length;
     uint16_t CurrentPos;

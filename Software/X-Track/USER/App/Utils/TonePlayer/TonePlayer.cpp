@@ -82,3 +82,8 @@ bool TonePlayer::Update(uint32_t tick)
 
     return false;
 }
+
+bool TonePlayer::IsPlaying()
+{
+    return CurrentPos <= Length;
+}

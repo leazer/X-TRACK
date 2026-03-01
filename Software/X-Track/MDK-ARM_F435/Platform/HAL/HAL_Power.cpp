@@ -171,8 +171,12 @@ void HAL::Power_EventMonitor()
             Power.EventCallback();
         }
         Backlight_SetGradual(0, 500);
-        digitalWrite(CONFIG_POWER_EN_PIN, LOW);
+        while(Audio_IsPlaying())
+        {
+            delay(100);
+        }
         Serial.println("Power: OFF");
+        digitalWrite(CONFIG_POWER_EN_PIN, LOW);
         Power.ShutdownReq = false;
     }
 }

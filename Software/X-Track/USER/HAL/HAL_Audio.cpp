@@ -32,3 +32,8 @@ bool HAL::Audio_PlayMusic(const char* name)
     }
     return retval;
 }
+
+bool HAL::Audio_IsPlaying()
+{
+    return player.IsPlaying();
+}
