@@ -108,9 +108,11 @@ void Buzz_SetEnable(bool en);
 void Buzz_Tone(uint32_t freq, int32_t duration = -1);
 
 /* LED */
-void RedLED_On();
-void GreenLED_On();
+void LED_Red_On();
+void LED_Green_On();
 void LED_Off();
+void LED_Red_Toggle();
+void LED_Green_Toggle();
 
 /* Encoder */
 void Encoder_Init();
