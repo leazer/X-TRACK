@@ -29,13 +29,12 @@ void HAL::IMU_Update()
         &imuInfo.ax, &imuInfo.ay, &imuInfo.az,
         &imuInfo.gx, &imuInfo.gy, &imuInfo.gz
     );
-//    Serial.printf(
-//        "ax = %d, ay = %d, az = %d, gx = %d, gy = %d, gz = %d\r\n",
-//        imuInfo.ax, imuInfo.ay, imuInfo.az, imuInfo.gx, imuInfo.gy, imuInfo.gz
-//    );
 
     imuInfo.steps = imu.GetCurrentStep();
-
+    // Serial.printf(
+    //     "ax = %d, ay = %d, az = %d, gx = %d, gy = %d, gz = %d, steps = %d\r\n",
+    //     imuInfo.ax, imuInfo.ay, imuInfo.az, imuInfo.gx, imuInfo.gy, imuInfo.gz, imuInfo.steps
+    // );
     if(CommitFunc)
     {
         CommitFunc(&imuInfo, UserData);

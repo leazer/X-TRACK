@@ -56,6 +56,9 @@
 /* Buzzer */
 #define CONFIG_BUZZ_PIN             PB2  // TIM2
 
+/* LED */
+#define CONFIG_LED_PIN              PH3
+
 /* GPS */
 #define CONFIG_GPS_SERIAL           Serial3
 #define CONFIG_GPS_USE_TRANSPARENT  0
@@ -78,8 +81,8 @@
 
 /* Power */
 #define CONFIG_POWER_EN_PIN         PH2
-#define CONFIG_POWER_WAIT_TIME      1000
-#define CONFIG_POWER_SHUTDOWM_DELAY 5000
+#define CONFIG_POWER_WAIT_TIME      500
+#define CONFIG_POWER_SHUTDOWM_DELAY 2000
 #define CONFIG_POWER_BATT_CHG_DET_PULLUP    true
 
 /* Debug USART */

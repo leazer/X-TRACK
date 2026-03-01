@@ -9,11 +9,11 @@ static bool EncoderDiffDisable = false;
 
 static void Buzz_Handler(int dir)
 {
-    static const uint16_t freqStart = 2000;
+    static const uint16_t freqStart = 7000;
     static uint16_t freq = freqStart;
     static uint32_t lastRotateTime;
 
-    if(millis() - lastRotateTime > 1000)
+    if(millis() - lastRotateTime > 500)
     {
         freq = freqStart;
     }
@@ -29,7 +29,7 @@ static void Buzz_Handler(int dir)
             freq -= 100;
         }
 
-        freq = constrain(freq, 100, 20 * 1000);
+        freq = constrain(freq, 6000, 8000);
     }
 
     lastRotateTime = millis();

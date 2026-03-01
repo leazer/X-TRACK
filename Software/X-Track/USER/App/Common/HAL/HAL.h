@@ -59,7 +59,7 @@ int I2C_Scan();
 bool IMU_Init();
 void IMU_SetCommitCallback(CommitFunc_t func, void* userData);
 void IMU_Update();
-    
+
 /* MAG */
 bool MAG_Init();
 void MAG_SetCommitCallback(CommitFunc_t func, void* userData);
@@ -105,6 +105,11 @@ void Buzz_init();
 void Buzz_SetEnable(bool en);
 void Buzz_Tone(uint32_t freq, int32_t duration = -1);
 
+/* LED */
+void RedLED_On();
+void GreenLED_On();
+void LED_Off();
+
 /* Encoder */
 void Encoder_Init();
 void Encoder_Update();
@@ -116,6 +121,7 @@ void Encoder_SetEnable(bool en);
 void Audio_Init();
 void Audio_Update();
 bool Audio_PlayMusic(const char* name);
+bool Audio_IsPlaying();
 
 /* Memory */
 void Memory_DumpInfo();
