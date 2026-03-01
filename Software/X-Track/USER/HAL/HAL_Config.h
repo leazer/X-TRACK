@@ -65,6 +65,7 @@
 #define CONFIG_GPS_BUF_OVERLOAD_CHK 0
 #define CONFIG_GPS_TX_PIN           PB10
 #define CONFIG_GPS_RX_PIN           PB11
+#define CONFIG_GPS_ENABLE_PIN       PB10
 
 /* IMU */
 #define CONFIG_IMU_INT1_PIN         PA15

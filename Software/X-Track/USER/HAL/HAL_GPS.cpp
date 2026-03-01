@@ -6,6 +6,7 @@
 #define GPS_USE_TRANSPARENT    CONFIG_GPS_USE_TRANSPARENT
 
 static TinyGPSPlus gps;
+static bool IsEnable = true;
 
 void HAL::GPS_Init()
 {
@@ -14,6 +15,18 @@ void HAL::GPS_Init()
     Serial.print("GPS: TinyGPS++ library v. ");
     Serial.print(TinyGPSPlus::libraryVersion());
     Serial.println(" by Mikal Hart");
+}
+
+void HAL::GPS_SetEnable(bool en)
+{
+    pinMode(CONFIG_GPS_ENABLE_PIN, OUTPUT);
+    digitalWrite(CONFIG_GPS_ENABLE_PIN, en ? LOW : HIGH);
+    IsEnable = en;
+}
+
+bool HAL::GPS_GetIsEnable()
+{
+    return IsEnable;
 }
 
 void HAL::GPS_Update()

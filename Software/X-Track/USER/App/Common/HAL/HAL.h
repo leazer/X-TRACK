@@ -95,6 +95,8 @@ const char* Clock_GetWeekString(uint8_t week);
 
 /* GPS */
 void GPS_Init();
+void GPS_SetEnable(bool en);
+bool GPS_GetIsEnable();
 void GPS_Update();
 bool GPS_GetInfo(GPS_Info_t* info);
 bool GPS_LocationIsValid();
