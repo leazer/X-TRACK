@@ -159,6 +159,7 @@ void HAL::Power_Update()
     if(millis() - Power.LastHandleTime >= (Power.AutoLowPowerTimeout * 1000))
     {
         Power_Shutdown();
+        CM_EXECUTE_ONCE(Audio_PlayMusic("Shutdown"));
     }
 }
 

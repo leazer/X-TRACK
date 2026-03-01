@@ -46,6 +46,7 @@ static void Encoder_EventHandler()
     int dir = (digitalRead(CONFIG_ENCODER_B_PIN) == LOW ? -1 : +1);
     EncoderDiff += dir;
     Buzz_Handler(dir);
+    HAL::Power_HandleTimeUpdate();
 }
 
 static void Encoder_PushHandler(ButtonEvent* btn, int event)
@@ -53,10 +54,12 @@ static void Encoder_PushHandler(ButtonEvent* btn, int event)
     if(event == ButtonEvent::EVENT_PRESSED)
     {
         EncoderDiffDisable = true;
+        HAL::Power_HandleTimeUpdate();
     }
     else if(event == ButtonEvent::EVENT_RELEASED)
     {
         EncoderDiffDisable = false;
+        HAL::Power_HandleTimeUpdate();
     }
     else if(event == ButtonEvent::EVENT_LONG_PRESSED)
     {
