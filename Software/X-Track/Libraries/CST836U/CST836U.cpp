@@ -8,8 +8,8 @@
 #define REG_CHIP_TYPE  0xAA
 
 // 芯片类型
-#define CST836U_CHIP_TYPE_H 0x13
-#define CST836U_CHIP_TYPE_L 0x00
+#define CST836U_CHIP_TYPE_H 0x00
+#define CST836U_CHIP_TYPE_L 0x13
 
 bool CST836U::Init(uint8_t addr)
 {
@@ -20,9 +20,6 @@ bool CST836U::Init(uint8_t addr)
     {
         return false;
     }
-
-    delay(50);
-
     return true;
 }
 

@@ -60,6 +60,11 @@ bool IMU_Init();
 void IMU_SetCommitCallback(CommitFunc_t func, void* userData);
 void IMU_Update();
 
+/* TouchPad */
+bool TouchPad_Init();
+bool TouchPad_GetPoint(uint16_t* x, uint16_t* y);
+void TouchPad_SetLowPowerMode(bool en);
+
 /* MAG */
 bool MAG_Init();
 void MAG_SetCommitCallback(CommitFunc_t func, void* userData);
