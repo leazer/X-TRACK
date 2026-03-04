@@ -240,4 +240,3 @@ uint8_t TwoWire::process(void)
 
 // Declare the instance that the users of the library can use
 TwoWire Wire(WIRE1_SCL_PIN, WIRE1_SDA_PIN, WIRE_DELAY);
-TwoWire Wire2(WIRE2_SCL_PIN, WIRE2_SDA_PIN, WIRE_DELAY);

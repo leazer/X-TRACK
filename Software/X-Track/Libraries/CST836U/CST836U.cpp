@@ -8,7 +8,7 @@
 #define REG_CHIP_TYPE  0xAA
 
 // 芯片类型
-#define CST836U_CHIP_TYPE_H 0x83
+#define CST836U_CHIP_TYPE_H 0x13
 #define CST836U_CHIP_TYPE_L 0x00
 
 bool CST836U::Init(uint8_t addr)
@@ -105,40 +105,40 @@ void CST836U::ExitLowPowerMode(void)
 
 void CST836U::WriteReg(uint8_t reg, uint8_t data)
 {
-    Wire2.beginTransmission(Address);
-    Wire2.write(reg);
-    Wire2.write(data);
-    Wire2.endTransmission();
+    Wire.beginTransmission(Address);
+    Wire.write(reg);
+    Wire.write(data);
+    Wire.endTransmission();
 }
 
 uint8_t CST836U::ReadReg(uint8_t reg)
 {
-    Wire2.beginTransmission(Address);
-    Wire2.write(reg);
-    Wire2.endTransmission();
+    Wire.beginTransmission(Address);
+    Wire.write(reg);
+    Wire.endTransmission();
 
-    Wire2.requestFrom(Address, (uint8_t)1);
-    uint8_t data = Wire2.read();
-    Wire2.endTransmission();
+    Wire.requestFrom(Address, (uint8_t)1);
+    uint8_t data = Wire.read();
+    Wire.endTransmission();
 
     return data;
 }
 
 void CST836U::ReadRegs(uint8_t reg, uint8_t* buf, uint16_t len)
 {
-    Wire2.beginTransmission(Address);
-    Wire2.write(reg);
-    Wire2.endTransmission();
+    Wire.beginTransmission(Address);
+    Wire.write(reg);
+    Wire.endTransmission();
 
-    Wire2.requestFrom(Address, len);
+    Wire.requestFrom(Address, len);
     for (uint16_t i = 0; i < len; i++)
     {
-        if (Wire2.available())
+        if (Wire.available())
         {
-            buf[i] = Wire2.read();
+            buf[i] = Wire.read();
         }
     }
-    Wire2.endTransmission();
+    Wire.endTransmission();
 }
 
 void CST836U::SetRegisterBits(uint8_t reg, uint8_t data, bool setBits)

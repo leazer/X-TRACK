@@ -58,6 +58,8 @@
 /* CAN */
 #define CAN_RX_BUFFER_SIZE 10
 #define CAN_TX_BUFFER_SIZE 10
+#define CAN_PREEMPTIONPRIORITY_DEFAULT 0
+#define CAN_SUBPRIORITY_DEFAULT        0
 
 #define CAN1_ENABLE 1
 #if CAN1_ENABLE
@@ -78,8 +80,6 @@
 #define WIRE_USE_FULL_SPEED_I2C 0
 #define WIRE1_SDA_PIN           PB4
 #define WIRE1_SCL_PIN           PB3
-#define WIRE2_SDA_PIN           PA2
-#define WIRE2_SCL_PIN           PA1
 #define WIRE_DELAY              1
 #define WIRE_BEGIN_TIMEOUT      100 // ms
 #define WIRE_BUFF_SIZE          32

@@ -40,7 +40,7 @@ public:
 private:
     uint8_t Address;
     
-    // I2C 读写函数（使用 Wire2）
+    // I2C 读写函数（使用 Wire）
     void WriteReg(uint8_t reg, uint8_t data);
     uint8_t ReadReg(uint8_t reg);
     void ReadRegs(uint8_t reg, uint8_t* buf, uint16_t len);

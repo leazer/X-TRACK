@@ -127,6 +127,5 @@ protected:
 };
 
 extern TwoWire Wire;
-extern TwoWire Wire2;
 
 #endif // _WIRE_H_
