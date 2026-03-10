@@ -112,7 +112,9 @@ void     yield(void);
 #  include "WString.h"
 #  include "WMath.h"
 #  include <Tone.h>
-#  include <HardwareSerial.h>
+#include <HardwareSerial.h>
+#include <HardwareCan.h>
+#include <USB_Device.h>
 #endif
 
 #endif

@@ -171,8 +171,8 @@ static void StatusBar_OnPowerSliderChange(lv_event_t *e)
     // 拖动过程中检查是否达到90%，达到立即关机
     if (code == LV_EVENT_RELEASED && value >= 95)
     {
-        // HAL::Power_Shutdown();
-        // HAL::Audio_PlayMusic("Shutdown");
+        HAL::Power_Shutdown();
+        HAL::Audio_PlayMusic("Shutdown");
     }
     // 松手事件：如果没有达到90%，自动归零
     else if (code == LV_EVENT_RELEASED && value < 90)
@@ -188,7 +188,7 @@ static void StatusBar_OnBrightnessSliderChange(lv_event_t *e)
     int32_t value = lv_slider_get_value(slider);
 
     // TODO: 调用设置亮度函数
-    // HAL::Backlight_SetBrightness(value);
+    HAL::Backlight_SetValue(value);
 }
 
 // 配置窗口滑块事件处理 - 音量
@@ -305,8 +305,8 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_t *slider_brightness = lv_slider_create(ui.configWindow);
     lv_obj_set_width(slider_brightness, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_brightness, 4);
-    lv_slider_set_range(slider_brightness, 0, 100);
-    lv_slider_set_value(slider_brightness, 100, LV_ANIM_OFF); // 默认最大亮度
+    lv_slider_set_range(slider_brightness, 0, 1000);
+    lv_slider_set_value(slider_brightness, 1000, LV_ANIM_OFF); // 默认最大亮度
     lv_obj_align(slider_brightness, LV_ALIGN_TOP_LEFT, 10, 100);
     lv_obj_add_style(slider_brightness, &style_slider_main, LV_PART_MAIN);
     lv_obj_add_style(slider_brightness, &style_slider_indicator, LV_PART_INDICATOR);

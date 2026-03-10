@@ -57,7 +57,7 @@
 #define CONFIG_BUZZ_PIN             PB2  // TIM2
 
 /* LED */
-#define CONFIG_LED_PIN              PH3
+#define CONFIG_LED_PIN              PA1
 
 /* GPS */
 #define CONFIG_GPS_SERIAL           Serial3
@@ -65,7 +65,7 @@
 #define CONFIG_GPS_BUF_OVERLOAD_CHK 0
 #define CONFIG_GPS_TX_PIN           PB10
 #define CONFIG_GPS_RX_PIN           PB11
-#define CONFIG_GPS_ENABLE_PIN       PB10
+#define CONFIG_GPS_ENABLE_PIN       PH3
 
 /* IMU */
 #define CONFIG_IMU_INT1_PIN         PA15

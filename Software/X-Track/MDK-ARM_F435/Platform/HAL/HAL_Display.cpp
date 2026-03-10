@@ -174,7 +174,7 @@ void HAL::Display_DumpCrashInfo(const char* info)
     screen.println(info);
     screen.print("Press KEY to reboot..");
 
-    screen.setCursor(0, screen.height() - TEXT_HEIGHT_1 * 6);
+    screen.setCursor(0, screen.height() - TEXT_HEIGHT_1 * 8);
     screen.println("Error code:");
     screen.printf("MMFAR = 0x%08X\r\n", SCB->MMFAR);
     screen.printf("BFAR  = 0x%08X\r\n", SCB->BFAR);

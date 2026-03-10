@@ -2,7 +2,7 @@
 #include "lvgl/lvgl.h"
 #include "HAL/HAL.h"
 
-#define SCREEN_BUFFER_SIZE (CONFIG_SCREEN_HOR_RES * CONFIG_SCREEN_VER_RES)
+#define SCREEN_BUFFER_SIZE (CONFIG_SCREEN_HOR_RES * CONFIG_SCREEN_VER_RES / 4)
 
 static lv_disp_drv_t* disp_drv_p = NULL;
 

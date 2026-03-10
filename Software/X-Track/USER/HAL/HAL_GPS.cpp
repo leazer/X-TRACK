@@ -1,26 +1,35 @@
 #include "HAL.h"
 #include "TinyGPSPlus/src/TinyGPS++.h"
+#include "gpio.h"
 
 #define GPS_SERIAL             CONFIG_GPS_SERIAL
 #define DEBUG_SERIAL           CONFIG_DEBUG_SERIAL
 #define GPS_USE_TRANSPARENT    CONFIG_GPS_USE_TRANSPARENT
 
 static TinyGPSPlus gps;
-static bool IsEnable = true;
+static bool IsEnable = false;
 
 void HAL::GPS_Init()
 {
-    GPS_SERIAL.begin(9600);
-
+    pinMode(CONFIG_GPS_ENABLE_PIN, OUTPUT);
     Serial.print("GPS: TinyGPS++ library v. ");
     Serial.print(TinyGPSPlus::libraryVersion());
     Serial.println(" by Mikal Hart");
+    HAL::GPS_SetEnable(true);
 }
 
 void HAL::GPS_SetEnable(bool en)
 {
-    pinMode(CONFIG_GPS_ENABLE_PIN, OUTPUT);
-    digitalWrite(CONFIG_GPS_ENABLE_PIN, en ? LOW : HIGH);
+    if (en)
+    {
+        GPS_SERIAL.begin(9600);
+        digitalWrite(CONFIG_GPS_ENABLE_PIN, HIGH);
+    }
+    else
+    {
+        GPS_SERIAL.end();
+        digitalWrite(CONFIG_GPS_ENABLE_PIN, LOW);
+    }
     IsEnable = en;
 }
 

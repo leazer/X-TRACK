@@ -2,6 +2,7 @@
 #include "App/Version.h"
 #include "MillisTaskManager/MillisTaskManager.h"
 
+
 static MillisTaskManager taskManager;
 
 #if CONFIG_SENSOR_ENABLE
@@ -36,6 +37,7 @@ static void HAL_TimerInterrputUpdate()
     HAL::Power_Update();
     HAL::Encoder_Update();
     HAL::Audio_Update();
+    Can1.processTxQueue();
 }
 
 void HAL::HAL_Init()
@@ -61,6 +63,8 @@ void HAL::HAL_Init()
 #endif
     Audio_Init();
     SD_Init();
+
+    USB_Device_Init();
 
     Display_Init();
 

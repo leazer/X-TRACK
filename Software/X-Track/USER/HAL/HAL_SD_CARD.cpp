@@ -2,10 +2,27 @@
 #include "Config/Config.h"
 #include "SdFat.h"
 
+#include "msc_diskio.h"
+#include "cdc_msc_class.h"
+
+/* 对外可见的 SD 实例，供 MSC 磁盘层复用 */
 static SdFat SD(&CONFIG_SD_SPI);
 
 static bool SD_IsReady = false;
 static uint32_t SD_CardSize = 0;
+
+/* 简单的 INQUIRY 数据（36 字节） */
+static uint8_t Inquiry_Data[SCSI_INQUIRY_DATA_LENGTH] = {
+    0x00, /* Direct-access block device */
+    0x80, /* Removable medium */
+    0x02, /* SPC-2 */
+    0x02, /* response data format */
+    SCSI_INQUIRY_DATA_LENGTH - 5,
+    0x00, 0x00, 0x00, /* additional length & flags */
+    'A', 'T', '3', '2', ' ', ' ', ' ', ' ',       /* Vendor  (8)  */
+    'S', 'D', ' ', 'C', 'A', 'R', 'D', ' ',       /* Product (16) */
+    '0', '0', '0', '1'                            /* Revision (4) */
+};
 
 static HAL::SD_CallbackFunction_t SD_EventCallback = nullptr;
 
@@ -153,4 +170,98 @@ void HAL::SD_Update()
     bool isInsert = (digitalRead(CONFIG_SD_CD_PIN) == LOW);
 
     CM_VALUE_MONITOR(isInsert, SD_Check(isInsert));
+}
+
+
+extern "C" uint8_t* get_inquiry(uint8_t lun)
+{
+    (void)lun;
+    return Inquiry_Data;
+}
+
+extern "C" usb_sts_type msc_disk_capacity(uint8_t lun, uint32_t* blk_nbr, uint32_t* blk_size)
+{
+    (void)lun;
+
+    if (!HAL::SD_GetReady())
+    {
+        return USB_FAIL;
+    }
+
+    uint32_t sectors = SD.card()->cardSize();
+    if (sectors == 0)
+    {
+        return USB_FAIL;
+    }
+
+    *blk_nbr  = sectors;
+    *blk_size = 512; /* SdFat 固定 512 字节扇区 */
+
+    return USB_OK;
+}
+
+extern "C" usb_sts_type msc_disk_read(uint8_t lun, uint32_t addr, uint8_t* buf, uint32_t len)
+{
+    (void)lun;
+
+    if (!HAL::SD_GetReady())
+    {
+        return USB_FAIL;
+    }
+
+    if (len == 0)
+    {
+        return USB_OK;
+    }
+
+    /* MSC 层传入的是字节地址/长度，这里换算成扇区 */
+    const uint32_t block_size = 512;
+    uint32_t start_block = addr / block_size;
+    uint32_t blocks      = len  / block_size;
+
+    if (blocks == 0)
+    {
+        return USB_FAIL;
+    }
+
+    if (!SD.card()->readBlocks(start_block, buf, blocks))
+    {
+        return USB_FAIL;
+    }
+
+    return USB_OK;
+}
+
+extern "C" usb_sts_type msc_disk_write(uint8_t lun, uint32_t addr, uint8_t* buf, uint32_t len)
+{
+    (void)lun;
+
+    if (!HAL::SD_GetReady())
+    {
+        return USB_FAIL;
+    }
+
+    if (len == 0)
+    {
+        return USB_OK;
+    }
+
+    const uint32_t block_size = 512;
+    uint32_t start_block = addr / block_size;
+    uint32_t blocks      = len  / block_size;
+
+    if (blocks == 0)
+    {
+        return USB_FAIL;
+    }
+
+    if (!SD.card()->writeBlocks(start_block, buf, blocks))
+    {
+        return USB_FAIL;
+    }
+
+    /* 确保数据落盘 */
+    SD.card()->syncBlocks();
+
+    return USB_OK;
 }
