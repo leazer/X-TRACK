@@ -57,17 +57,39 @@ void system_clock_config(void)
   /* reset crm */
   crm_reset();
 
-  /* enable hick */
-  crm_clock_source_enable(CRM_CLOCK_SOURCE_HICK, TRUE);
+  // /* enable hick */
+  // crm_clock_source_enable(CRM_CLOCK_SOURCE_HICK, TRUE);
 
-   /* wait till hick is ready */
-  while(crm_flag_get(CRM_HICK_STABLE_FLAG) != SET)
+  //  /* wait till hick is ready */
+  // while(crm_flag_get(CRM_HICK_STABLE_FLAG) != SET)
+  // {
+  // }
+  /* config pll clock resource */
+  // crm_pll_config(CRM_PLL_SOURCE_HICK, 72, 1, CRM_PLL_FR_2);
+  
+  crm_clock_source_enable(CRM_CLOCK_SOURCE_HEXT, TRUE);
+
+  /* wait till hext is ready */
+  while(crm_hext_stable_wait() == ERROR)
   {
   }
+  /* config pll clock resource
+  common frequency config list: pll source selected  hick or hext(8mhz)
+  _________________________________________________________________________________________________
+  |        |         |         |         |         |         |         |         |        |        |
+  |pll(mhz)|   288   |   252   |   216   |   192   |   180   |   144   |   108   |   72   |   36   |
+  |________|_________|_________|_________|_________|_________|_________|_________|_________________|
+  |        |         |         |         |         |         |         |         |        |        |
+  |pll_ns  |   144   |   126   |   108   |   96    |   90    |   72    |   108   |   72   |   72   |
+  |        |         |         |         |         |         |         |         |        |        |
+  |pll_ms  |   1     |   1     |   1     |   1     |   1     |   1     |   1     |   1    |   1    |
+  |        |         |         |         |         |         |         |         |        |        |
+  |pll_fr  |   FR_4  |   FR_4  |   FR_4  |   FR_4  |   FR_4  |   FR_4  |   FR_8  |   FR_8 |   FR_16|
+  |________|_________|_________|_________|_________|_________|_________|_________|________|________|
 
-
-  /* config pll clock resource */
-  crm_pll_config(CRM_PLL_SOURCE_HICK, 72, 1, CRM_PLL_FR_2);
+  if pll clock source selects hext with other frequency values, or configure pll to other
+  frequency values, please use the at32 new clock  configuration tool for configuration.  */
+  crm_pll_config(CRM_PLL_SOURCE_HEXT, 144, 1, CRM_PLL_FR_4);
 
   /* enable pll */
   crm_clock_source_enable(CRM_CLOCK_SOURCE_PLL, TRUE);
