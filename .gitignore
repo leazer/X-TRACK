@@ -86,3 +86,6 @@ GNSSToolKitLite_configs.ini
 *SystemSave*
 keil-build-viewer.log
 keil-build-viewer-record.txt
+compile_commands.json
+EventRecorderStub.scvd
+JLinkLog.txt
