@@ -43,7 +43,6 @@ struct CanTimingConfig
 };
 
 static const CanTimingConfig s_timing_75 = { CAN_BTS1_5TQ, CAN_BTS2_2TQ, 8 };    // 75%
-static const CanTimingConfig s_timing_80 = { CAN_BTS1_7TQ, CAN_BTS2_2TQ, 10 };   // 80%
 static const CanTimingConfig s_timing_875 = { CAN_BTS1_13TQ, CAN_BTS2_2TQ, 16 }; // 87.5%
 
 /**
@@ -52,9 +51,9 @@ static const CanTimingConfig s_timing_875 = { CAN_BTS1_13TQ, CAN_BTS2_2TQ, 16 };
  * @retval 无
  */
 HardwareCAN::HardwareCAN(can_type* can)
-    : _CANx(can), _initialized(false), _baudrate(0), _mode(CAN_MODE_LISTEN_ONLY),
-      _statistics_enabled(false), _sample_index(0), _window_start_time_ms(0), _rxbuffer_head(0),
-      _rxbuffer_tail(0), _txbuffer_head(0), _txbuffer_tail(0)
+    : _CANx(can), _initialized(false), _baudrate(0), _mode(CAN_MODE_LISTEN_ONLY), _rxbuffer_head(0),
+      _rxbuffer_tail(0), _txbuffer_head(0), _txbuffer_tail(0), _statistics_enabled(false),
+      _sample_index(0),_window_start_time_ms(0)
 {
     // 初始化统计结构
     memset(&_statistics, 0, sizeof(_statistics));
@@ -112,12 +111,7 @@ bool HardwareCAN::calculateBaudrate(uint32_t baudrate, can_baudrate_type* baudra
     const CanTimingConfig* cfg;
     if (target >= 500000)
     {
-        cfg = &s_timing_80;
-        uint32_t div80 = (can_clock + (target * 10) / 2) / (target * 10);
-        if (div80 < 1 || div80 > 1024)
-        {
-            cfg = &s_timing_75; // 80% 分频超限，退化为 75%
-        }
+        cfg = &s_timing_75;
     }
     else
     {
@@ -150,16 +144,16 @@ bool HardwareCAN::calculateBaudrate(uint32_t baudrate, can_baudrate_type* baudra
  * CAN1: PA12/PA11（默认）| PB9/PB8 | PB9/PA11（TX/RX 可跨端口）
  * CAN2: PB13/PB12（默认）| PB6/PB5 | 任意合法组合
  */
-bool HardwareCAN::begin(uint32_t baudrate, Pin_TypeDef tx_pin, Pin_TypeDef rx_pin)
+bool HardwareCAN::begin(uint32_t baudrate, Pin_TypeDef tx_pin, Pin_TypeDef rx_pin,
+                        uint8_t preemptionPriority, uint8_t subPriority)
 {
-    gpio_init_type gpio_init_struct;
     can_baudrate_type can_baudrate_struct;
     Pin_TypeDef tx_actual;
     Pin_TypeDef rx_actual;
     /* as specified in CAN protocol, the maximum allowable oscillator tolerance is 1.58%.
        The HICK accuracy does not meet the clock requirements in CAN protocol. to guarantee normal
        communication, it is recommended to use HEXT as the system clock source. */
-    if (_CANx == NULL || crm_flag_get(CRM_HEXT_STABLE_FLAG) != SET)
+    if (_CANx == NULL)
         return false;
 
     if (_CANx == CAN1)
@@ -178,14 +172,11 @@ bool HardwareCAN::begin(uint32_t baudrate, Pin_TypeDef tx_pin, Pin_TypeDef rx_pi
     uint16_t tx_bit = digitalPinToBitMask(tx_actual);
     uint16_t rx_bit = digitalPinToBitMask(rx_actual);
 
-    GPIOx_Init(digitalPinToPort(tx_actual), tx_bit, OUTPUT_AF_PP, GPIO_DRIVE_STRENGTH_STRONGER);
-    GPIOx_Init(digitalPinToPort(rx_actual), rx_bit, OUTPUT_AF_PP, GPIO_DRIVE_STRENGTH_STRONGER);
+    GPIOx_Init(digitalPinToPort(tx_actual), tx_bit, OUTPUT_AF_PP, GPIO_DRIVE_STRENGTH_MODERATE);
+    GPIOx_Init(digitalPinToPort(rx_actual), rx_bit, OUTPUT_AF_PP, GPIO_DRIVE_STRENGTH_MODERATE);
 
     gpio_pin_mux_config(digitalPinToPort(tx_actual), GPIO_GetPinSource(tx_bit), GPIO_MUX_9);
     gpio_pin_mux_config(digitalPinToPort(rx_actual), GPIO_GetPinSource(rx_bit), GPIO_MUX_9);
-
-    // 复位 CAN
-    can_reset(_CANx);
 
     // 配置 CAN 基参数（默认监听模式，必要时可通过 setMode 切到通讯模式）
     _can_base_struct.mode_selection = CAN_MODE_LISTENONLY;
@@ -209,13 +200,13 @@ bool HardwareCAN::begin(uint32_t baudrate, Pin_TypeDef tx_pin, Pin_TypeDef rx_pi
     /* can interrupt config */
     if (_CANx == CAN1)
     {
-        nvic_irq_enable(CAN1_SE_IRQn, 0x00, 0x00);
-        nvic_irq_enable(CAN1_RX0_IRQn, 0x00, 0x00);
+        nvic_irq_enable(CAN1_SE_IRQn, preemptionPriority, subPriority);
+        nvic_irq_enable(CAN1_RX0_IRQn, preemptionPriority, subPriority);
     }
     else
     {
-        nvic_irq_enable(CAN2_SE_IRQn, 0x00, 0x00);
-        nvic_irq_enable(CAN2_RX0_IRQn, 0x00, 0x00);
+        nvic_irq_enable(CAN2_SE_IRQn, preemptionPriority, subPriority);
+        nvic_irq_enable(CAN2_RX0_IRQn, preemptionPriority, subPriority);
     }
     can_interrupt_enable(_CANx, CAN_RF0MIEN_INT, TRUE);
 
@@ -239,13 +230,13 @@ void HardwareCAN::end(void)
 
     if (_CANx == CAN1)
     {
-        nvic_irq_disable(CAN1_SE_IRQn, 0x00, 0x00);
-        nvic_irq_disable(CAN1_RX0_IRQn, 0x00, 0x00);
+        nvic_irq_disable(CAN1_SE_IRQn);
+        nvic_irq_disable(CAN1_RX0_IRQn);
     }
     else
     {
-        nvic_irq_disable(CAN2_SE_IRQn, 0x00, 0x00);
-        nvic_irq_disable(CAN2_RX0_IRQn, 0x00, 0x00);
+        nvic_irq_disable(CAN2_SE_IRQn);
+        nvic_irq_disable(CAN2_RX0_IRQn);
     }
     can_interrupt_enable(_CANx, CAN_RF0MIEN_INT, FALSE);
     can_interrupt_enable(_CANx, CAN_ETRIEN_INT, FALSE);
@@ -280,11 +271,11 @@ bool HardwareCAN::setFilter(uint8_t filter_number, uint32_t filter_id, uint32_t 
     can_filter_init_struct.filter_mode = CAN_FILTER_MODE_ID_MASK;
     can_filter_init_struct.filter_fifo = (can_filter_fifo_type)fifo;
     can_filter_init_struct.filter_number = filter_number;
-    can_filter_init_struct.filter_bit = CAN_FILTER_32BIT;
 
     if (id_type == CAN_STANDARD_FRAME)
     {
         // 标准帧：11位 ID
+        can_filter_init_struct.filter_bit = CAN_FILTER_16BIT;
         can_filter_init_struct.filter_id_high = (filter_id << 5) & 0xFFFF;
         can_filter_init_struct.filter_id_low = 0;
         can_filter_init_struct.filter_mask_high = (filter_mask << 5) & 0xFFFF;
@@ -293,6 +284,7 @@ bool HardwareCAN::setFilter(uint8_t filter_number, uint32_t filter_id, uint32_t 
     else
     {
         // 扩展帧：29位 ID
+        can_filter_init_struct.filter_bit = CAN_FILTER_32BIT;
         can_filter_init_struct.filter_id_high = (filter_id >> 13) & 0xFFFF;
         can_filter_init_struct.filter_id_low = ((filter_id << 3) & 0xFFF8) | 0x04; // 设置扩展帧标志
         can_filter_init_struct.filter_mask_high = (filter_mask >> 13) & 0xFFFF;
@@ -946,6 +938,13 @@ void HardwareCAN::RX0_IRQHandler(void)
             // 正常写入环形缓冲
             can_rx_message_type* dst = &_rx_message_buffer[_rxbuffer_head];
             can_message_receive(_CANx, (can_rx_fifo_num_type)CAN_RX_FIFO0, dst);
+            // Serial.printf("rx frame %d type %d dlc %d sid %x eid %x data ", dst->frame_type, dst->id_type,
+            //               dst->dlc, dst->standard_id, dst->extended_id);
+            // for (uint8_t i = 0; i < dst->dlc; i++)
+            // {
+            //     Serial.printf(" %02x", dst->data[i]);
+            // }
+            // Serial.println();
             updateRxStatistics(dst->dlc);
             _rxbuffer_head = next;
         }

@@ -90,7 +90,8 @@ class HardwareCAN
     // TX/RX 可独立指定，支持跨端口组合（如 PB9+PA11）
     // CAN1: PA12/PA11（默认）| PB9/PB8 | 任意合法组合
     // CAN2: PB13/PB12（默认）| PB6/PB5 | 任意合法组合
-    bool begin(uint32_t baudrate, Pin_TypeDef tx_pin = PIN_MAX, Pin_TypeDef rx_pin = PIN_MAX);
+    bool begin(uint32_t baudrate, Pin_TypeDef tx_pin = PIN_MAX, Pin_TypeDef rx_pin = PIN_MAX,
+        uint8_t preemptionPriority = CAN_PREEMPTIONPRIORITY_DEFAULT, uint8_t subPriority = CAN_SUBPRIORITY_DEFAULT);
 
     // 停止 CAN
     void end(void);
@@ -172,30 +173,29 @@ class HardwareCAN
         return _initialized;
     }
 
-  private:
-    can_type* _CANx;
-    can_base_type _can_base_struct;
-
-    bool _initialized;
-    uint32_t _baudrate;
-    uint8_t _mode; // 当前工作模式
-
-    volatile uint16_t _rxbuffer_head;
-    volatile uint16_t _rxbuffer_tail;
-    can_rx_message_type _rx_message_buffer[CAN_RX_BUFFER_SIZE];
-
-    volatile uint16_t _txbuffer_head;
-    volatile uint16_t _txbuffer_tail;
-    can_tx_message_type _tx_message_buffer[CAN_TX_BUFFER_SIZE];
-
     // 中断处理函数
     void SE_IRQHandler(void);
     void RX0_IRQHandler(void);
+
+  private:
+    can_type* _CANx;
+    bool _initialized;
+    uint32_t _baudrate;
+    uint8_t _mode; // 当前工作模式
+    volatile uint16_t _rxbuffer_head;
+    volatile uint16_t _rxbuffer_tail;
+    volatile uint16_t _txbuffer_head;
+    volatile uint16_t _txbuffer_tail;
 
     // 总线统计
     BusStatistics_t _statistics;
     bool _statistics_enabled;
     bool _use_precise_method; // 是否使用精确方法
+
+    can_base_type _can_base_struct;
+
+    can_rx_message_type _rx_message_buffer[CAN_RX_BUFFER_SIZE];
+    can_tx_message_type _tx_message_buffer[CAN_TX_BUFFER_SIZE];
 
     // 精确统计相关
     static const uint32_t STAT_WINDOW_SIZE = 100; // 统计窗口大小（100ms）
