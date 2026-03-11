@@ -35,11 +35,11 @@ static void HAL_Sensor_Init()
 
 static void HAL_TimerInterrputUpdate()
 {
+    Can1.processTxQueue();
     HAL::Power_Update();
     HAL::Encoder_Update();
     HAL::Audio_Update();
     HAL::LED_Update();
-    Can1.processTxQueue();
 }
 
 void HAL::HAL_Init()

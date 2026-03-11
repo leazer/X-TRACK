@@ -172,7 +172,6 @@ static void StatusBar_OnPowerSliderChange(lv_event_t *e)
     if (code == LV_EVENT_RELEASED && value >= 95)
     {
         HAL::Power_Shutdown();
-        HAL::Audio_PlayMusic("Shutdown");
     }
     // 松手事件：如果没有达到90%，自动归零
     else if (code == LV_EVENT_RELEASED && value < 90)

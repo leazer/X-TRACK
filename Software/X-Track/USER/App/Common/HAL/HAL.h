@@ -41,6 +41,7 @@ void Backlight_Init();
 uint16_t Backlight_GetValue();
 void Backlight_SetValue(int16_t val);
 void Backlight_SetGradual(uint16_t target, uint16_t time = 500);
+bool Backlight_IsGradualBusy();
 void Backlight_ForceLit(bool en);
 
 /* Display */
@@ -146,6 +147,7 @@ void Encoder_Update();
 int32_t Encoder_GetDiff();
 bool Encoder_GetIsPush();
 void Encoder_SetEnable(bool en);
+bool Encoder_GetEnable();
 
 /* Audio */
 void Audio_Init();

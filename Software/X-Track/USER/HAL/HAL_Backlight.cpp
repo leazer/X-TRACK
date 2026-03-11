@@ -12,6 +12,14 @@ static void Backlight_AnimCallback(void * obj, int32_t brightness)
     HAL::Backlight_SetValue(brightness);
 }
 
+static volatile bool s_backlightGradualBusy = false;
+
+static void Backlight_AnimReadyCallback(lv_anim_t* a)
+{
+    (void)a;
+    s_backlightGradualBusy = false;
+}
+
 /**
   * @brief  背光初始化
   * @param  无
@@ -37,9 +45,17 @@ void HAL::Backlight_SetGradual(uint16_t target, uint16_t time)
     lv_anim_set_values(&a, Backlight_GetValue(), target);
     lv_anim_set_time(&a, time);
     lv_anim_set_path_cb(&a, lv_anim_path_ease_out);
+    lv_anim_set_ready_cb(&a, Backlight_AnimReadyCallback);
 
+    s_backlightGradualBusy = true;
     lv_anim_start(&a);
 }
+
+bool HAL::Backlight_IsGradualBusy()
+{
+    return s_backlightGradualBusy;
+}
+
 
 /**
   * @brief  获取背光亮度

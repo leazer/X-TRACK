@@ -1,4 +1,5 @@
 #include "HAL/HAL.h"
+#include "lvgl/lvgl.h"
 
 #define BATT_ADC                    ADC1
 #define BATT_MIN_VOLTAGE            3300
@@ -198,6 +199,8 @@ void HAL::Power_SetAutoLowPowerEnable(bool en)
 void HAL::Power_Shutdown()
 {
     CM_EXECUTE_ONCE(Power.ShutdownReq = true);
+    CM_EXECUTE_ONCE(Audio_PlayMusic("Shutdown"));
+    HAL::Encoder_SetEnable(false);
 }
 
 void HAL::Power_Update()
@@ -213,7 +216,6 @@ void HAL::Power_Update()
     if(millis() - Power.LastHandleTime >= (Power.AutoLowPowerTimeout * 1000))
     {
         Power_Shutdown();
-        CM_EXECUTE_ONCE(Audio_PlayMusic("Shutdown"));
     }
 }
 
@@ -221,14 +223,15 @@ void HAL::Power_EventMonitor()
 {
     if(Power.ShutdownReq)
     {
+        LED_Red_On();
         if(Power.EventCallback)
         {
             Power.EventCallback();
         }
         Backlight_SetGradual(0, 500);
-        while(Audio_IsPlaying())
+        while(Audio_IsPlaying() || Backlight_IsGradualBusy())
         {
-            delay(100);
+            lv_task_handler();
         }
         Serial.println("Power: OFF");
         digitalWrite(CONFIG_POWER_EN_PIN, LOW);

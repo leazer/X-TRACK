@@ -64,7 +64,6 @@ static void Encoder_PushHandler(ButtonEvent* btn, int event)
     else if(event == ButtonEvent::EVENT_LONG_PRESSED)
     {
         HAL::Power_Shutdown();
-        HAL::Audio_PlayMusic("Shutdown");
     }
 }
 
@@ -104,4 +103,9 @@ bool HAL::Encoder_GetIsPush()
 void HAL::Encoder_SetEnable(bool en)
 {
     EncoderEnable = en;
+}
+
+bool HAL::Encoder_GetEnable()
+{
+    return EncoderEnable;
 }

@@ -98,7 +98,7 @@ static void encoder_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     data->enc_diff = HAL::Encoder_GetDiff();
     bool isPush = HAL::Encoder_GetIsPush();
     data->state = isPush ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-    if(isPush != lastState)
+    if(isPush != lastState && HAL::Encoder_GetEnable())
     {
         HAL::Buzz_Tone(isPush ? 500 : 700, 20);
         lastState = isPush;
