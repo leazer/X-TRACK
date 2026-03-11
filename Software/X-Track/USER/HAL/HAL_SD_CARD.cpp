@@ -5,7 +5,6 @@
 #include "msc_diskio.h"
 #include "cdc_msc_class.h"
 
-/* 对外可见的 SD 实例，供 MSC 磁盘层复用 */
 static SdFat SD(&CONFIG_SD_SPI);
 
 static bool SD_IsReady = false;

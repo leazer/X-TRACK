@@ -26,10 +26,13 @@
 #include <stdint.h>
 #include "HAL_Def.h"
 
+/* LED flash count: always on */
+#define HAL_LED_FLASH_ALWAYS_ON   (-1)
+
 namespace HAL {
-    
+
 typedef bool (*CommitFunc_t)(void* info, void* userData);
-    
+
 void HAL_Init();
 void HAL_Update();
 
@@ -118,6 +121,24 @@ void LED_Green_On();
 void LED_Off();
 void LED_Red_Toggle();
 void LED_Green_Toggle();
+
+/* LED Flash
+ * mode:
+ *   0 - RED        : 红色闪烁
+ *   1 - GREEN      : 绿色闪烁
+ *   2 - RED_GREEN  : 红绿交替闪烁
+ * on/off: 亮/灭时间 [ms]
+ * count : 闪烁次数, HAL_LED_FLASH_ALWAYS_ON(-1) 为常亮
+ */
+enum LED_Mode_t
+{
+    LED_MODE_RED = 0,
+    LED_MODE_GREEN,
+    LED_MODE_RED_GREEN,
+};
+
+void LED_Flash(uint8_t mode, uint16_t on, uint16_t off, int16_t count);
+void LED_Update();
 
 /* Encoder */
 void Encoder_Init();

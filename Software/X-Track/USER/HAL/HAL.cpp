@@ -1,5 +1,6 @@
 #include "HAL.h"
 #include "App/Version.h"
+#include "Common/HAL/HAL.h"
 #include "MillisTaskManager/MillisTaskManager.h"
 
 
@@ -37,6 +38,7 @@ static void HAL_TimerInterrputUpdate()
     HAL::Power_Update();
     HAL::Encoder_Update();
     HAL::Audio_Update();
+    HAL::LED_Update();
     Can1.processTxQueue();
 }
 
@@ -79,6 +81,8 @@ void HAL::HAL_Init()
     taskManager.Register(SD_Update, 500);
     taskManager.Register(Memory_DumpInfo, 1000);
 
+    HAL::LED_Flash(HAL::LED_MODE_GREEN, 50, 100, 2);
+    
     Timer_SetInterrupt(CONFIG_HAL_UPDATE_TIM, 10 * 1000, HAL_TimerInterrputUpdate);
     Timer_SetEnable(CONFIG_HAL_UPDATE_TIM, true);
 }

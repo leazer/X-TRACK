@@ -3,7 +3,6 @@
 #define BATT_ADC                    ADC1
 #define BATT_MIN_VOLTAGE            3300
 #define BATT_MAX_VOLTAGE            4200
-#define BATT_FULL_CHARGE_VOLTAGE    4100
 
 #if CONFIG_POWER_BATT_CHG_DET_PULLUP
 #  define BATT_CHG_DET_PIN_MODE     INPUT_PULLUP
@@ -12,6 +11,27 @@
 #  define BATT_CHG_DET_PIN_MODE     INPUT_PULLDOWN
 #  define BATT_CHG_DET_STATUS       ((usage == 100) ? false : digitalRead(CONFIG_BAT_CHG_DET_PIN))
 #endif
+
+
+// 定义查找表：电压必须从高到低排列
+// 格式：{电压(mV), 电量(%)}
+static const struct {
+    uint16_t voltage;
+    uint8_t soc;
+} batt_curve[] = {
+    {4150, 100},
+    {4050, 95},
+    {3950, 85},
+    {3900, 70},
+    {3800, 55},
+    {3700, 40},
+    {3600, 25},
+    {3500, 15},
+    {3400, 5},
+    {3300, 0}
+};
+
+#define CURVE_POINTS (sizeof(batt_curve) / sizeof(batt_curve[0]))
 
 typedef struct
 {
@@ -86,7 +106,7 @@ static void Power_ADC_Update()
             BATT_ADC,
             (adc_channel_select_type)PIN_MAP[CONFIG_BAT_DET_PIN].ADC_Channel,
             1,
-            ADC_SAMPLETIME_47_5
+            ADC_SAMPLETIME_247_5
         );
 
         adc_ordinary_software_trigger_enable(BATT_ADC, TRUE);
@@ -97,6 +117,40 @@ static void Power_ADC_Update()
         Power.ADCValue = Power_ADC_GetValue();
         isStartConv = false;
     }
+}
+
+static uint8_t Get_SOC_From_Voltage(int voltage_mv) {
+    // 1. 边界处理
+    if (voltage_mv >= batt_curve[0].voltage) return 100;
+    if (voltage_mv <= batt_curve[CURVE_POINTS - 1].voltage) return 0;
+
+    // 2. 查找区间
+    for (int i = 0; i < CURVE_POINTS - 1; i++) {
+        if (voltage_mv >= batt_curve[i+1].voltage && voltage_mv < batt_curve[i].voltage) {
+            // 3. 线性插值计算
+            // y = y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+            // 注意：因为数组是降序，x1 < x0，所以分母是负数，或者交换顺序计算
+            
+            uint16_t v_high = batt_curve[i].voltage;
+            uint16_t v_low  = batt_curve[i+1].voltage;
+            uint8_t  s_high = batt_curve[i].soc;
+            uint8_t  s_low  = batt_curve[i+1].soc;
+
+            // 防止除以零
+            if (v_high == v_low) return s_high;
+
+            // 计算比例 (0.0 ~ 1.0)，使用整数运算避免浮点
+            // ratio = (v_high - current_v) / (v_high - v_low)
+            int32_t delta_v_total = v_high - v_low;
+            int32_t delta_v_curr  = v_high - voltage_mv;
+            
+            // 计算当前电量 = 高电量 - (比例 * 电量差)
+            int32_t soc_delta = ((s_high - s_low) * delta_v_curr) / delta_v_total;
+            
+            return s_high - soc_delta;
+        }
+    }
+    return 0; // 默认
 }
 
 void HAL::Power_Init()
@@ -184,6 +238,7 @@ void HAL::Power_EventMonitor()
 
 void HAL::Power_GetInfo(Power_Info_t* info)
 {
+
     int voltage = map(
                       Power.ADCValue,
                       0, 4095,
@@ -194,11 +249,7 @@ void HAL::Power_GetInfo(Power_Info_t* info)
 
     CM_VALUE_LIMIT(voltage, BATT_MIN_VOLTAGE, BATT_MAX_VOLTAGE);
 
-    int usage = map(
-                    voltage,
-                    BATT_MIN_VOLTAGE, BATT_FULL_CHARGE_VOLTAGE,
-                    0, 100
-                );
+    int usage = Get_SOC_From_Voltage(voltage);
 
     CM_VALUE_LIMIT(usage, 0, 100);
 

@@ -306,7 +306,7 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_set_width(slider_brightness, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_brightness, 4);
     lv_slider_set_range(slider_brightness, 0, 1000);
-    lv_slider_set_value(slider_brightness, 1000, LV_ANIM_OFF); // 默认最大亮度
+    lv_slider_set_value(slider_brightness, HAL::Backlight_GetValue(), LV_ANIM_OFF); // 默认最大亮度
     lv_obj_align(slider_brightness, LV_ALIGN_TOP_LEFT, 10, 100);
     lv_obj_add_style(slider_brightness, &style_slider_main, LV_PART_MAIN);
     lv_obj_add_style(slider_brightness, &style_slider_indicator, LV_PART_INDICATOR);
