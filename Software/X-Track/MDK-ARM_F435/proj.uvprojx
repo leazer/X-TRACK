@@ -3096,6 +3096,11 @@
               <FilePath>..\USER\HAL\HAL_SD_CARD.cpp</FilePath>
             </File>
             <File>
+              <FileName>HAL_USB.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\USER\HAL\HAL_USB.cpp</FilePath>
+            </File>
+            <File>
               <FileName>rt_sys.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\USER\HAL\rt_sys.cpp</FilePath>
@@ -4312,6 +4317,16 @@
               <FileName>msc_bot_scsi.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\AT32USB\usbd_class\composite_cdc_msc\msc_bot_scsi.c</FilePath>
+            </File>
+            <File>
+              <FileName>cdc_desc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\AT32USB\usbd_class\cdc\cdc_desc.c</FilePath>
+            </File>
+            <File>
+              <FileName>cdc_class.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\AT32USB\usbd_class\cdc\cdc_class.c</FilePath>
             </File>
           </Files>
         </Group>

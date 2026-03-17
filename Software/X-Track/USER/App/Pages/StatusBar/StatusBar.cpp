@@ -200,6 +200,19 @@ static void StatusBar_OnVolumeSliderChange(lv_event_t *e)
     // HAL::Audio_SetVolume(value);
 }
 
+// 配置窗口开关事件处理 - USB MSC
+static void StatusBar_OnUsbMscSwitchChange(lv_event_t *e)
+{
+    lv_obj_t *sw = lv_event_get_target(e);
+    bool en = lv_obj_has_state(sw, LV_STATE_CHECKED);
+
+    DataProc::SysConfig_Info_t info;
+    DATA_PROC_INIT_STRUCT(info);
+    info.cmd = DataProc::SYSCONFIG_CMD_SET_USB_MSC_ENABLE;
+    info.usbMscEnable = en;
+    DataProc::Center()->AccountMain.Notify("SysConfig", &info, sizeof(info));
+}
+
 // 关闭配置窗口
 static void StatusBar_ConfigWindowClose()
 {
@@ -253,27 +266,27 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_style_init(&style_slider_main);
     lv_style_set_bg_color(&style_slider_main, lv_color_hex(0x444444));
     lv_style_set_bg_opa(&style_slider_main, LV_OPA_COVER);
-    lv_style_set_height(&style_slider_main, 20);
-    lv_style_set_radius(&style_slider_main, 10);
+    lv_style_set_height(&style_slider_main, 10);
+    lv_style_set_radius(&style_slider_main, 5);
 
     static lv_style_t style_slider_indicator;
     lv_style_init(&style_slider_indicator);
     lv_style_set_bg_color(&style_slider_indicator, lv_color_hex(0x00FF00));
     lv_style_set_bg_opa(&style_slider_indicator, LV_OPA_COVER);
-    lv_style_set_radius(&style_slider_indicator, 10);
+    lv_style_set_radius(&style_slider_indicator, 5);
 
     static lv_style_t style_slider_knob;
     lv_style_init(&style_slider_knob);
     lv_style_set_bg_color(&style_slider_knob, lv_color_white());
     lv_style_set_bg_opa(&style_slider_knob, LV_OPA_COVER);
-    lv_style_set_width(&style_slider_knob, 20);
-    lv_style_set_height(&style_slider_knob, 20);
-    lv_style_set_radius(&style_slider_knob, 10);
+    lv_style_set_width(&style_slider_knob, 10);
+    lv_style_set_height(&style_slider_knob, 10);
+    lv_style_set_radius(&style_slider_knob, 5);
 
     // 标题
     lv_obj_t *title = lv_label_create(ui.configWindow);
     lv_obj_add_style(title, &style_label, 0);
-    lv_label_set_text(title, "syssetting");
+    lv_label_set_text(title, "System Setting");
     lv_obj_set_width(title, CONFIG_WINDOW_WIDTH - 20);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 0);
 
@@ -328,6 +341,20 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_style(slider_volume, &style_slider_indicator, LV_PART_INDICATOR);
     lv_obj_add_style(slider_volume, &style_slider_knob, LV_PART_KNOB);
     lv_obj_add_event_cb(slider_volume, StatusBar_OnVolumeSliderChange, LV_EVENT_VALUE_CHANGED, nullptr);
+
+    // USB MSC 开关
+    lv_obj_t *label_usb = lv_label_create(ui.configWindow);
+    lv_obj_add_style(label_usb, &style_label, 0);
+    lv_label_set_text(label_usb, "USB MSC");
+    lv_obj_align(label_usb, LV_ALIGN_TOP_LEFT, 0, 180);
+
+    lv_obj_t *sw_usb = lv_switch_create(ui.configWindow);
+    lv_obj_align(sw_usb, LV_ALIGN_TOP_LEFT, CONFIG_WINDOW_WIDTH - 70, 175);
+    if (HAL::USB_GetMscEnable())
+    {
+        lv_obj_add_state(sw_usb, LV_STATE_CHECKED);
+    }
+    lv_obj_add_event_cb(sw_usb, StatusBar_OnUsbMscSwitchChange, LV_EVENT_VALUE_CHANGED, nullptr);
 }
 
 // 电池图标点击事件
@@ -447,7 +474,7 @@ static lv_obj_t *StatusBar_SdCardImage_Create(lv_obj_t *par)
 {
     lv_obj_t *img = lv_img_create(par);
     lv_img_set_src(img, ResourcePool::GetImage("sd_card"));
-    lv_obj_align(img, LV_ALIGN_LEFT_MID, 55, -1);
+    lv_obj_align(img, LV_ALIGN_LEFT_MID, 85, -1);
 
     lv_obj_set_style_translate_y(img, -STATUS_BAR_HEIGHT, LV_STATE_DISABLED);
 
@@ -501,13 +528,21 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
     lv_style_set_text_color(&style_label, lv_color_white());
     lv_style_set_text_font(&style_label, ResourcePool::GetFont("bahnschrift_17"));
 
+    /* clock */
+    lv_obj_t *label = lv_label_create(cont);
+    lv_obj_add_style(label, &style_label, 0);
+    lv_label_set_text(label, "00:00");
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, 7, 0);
+    ui.labelClock = label;
+
     /* satellite */
     lv_obj_t *img = lv_img_create(cont);
     lv_img_set_src(img, ResourcePool::GetImage("satellite"));
-    lv_obj_align(img, LV_ALIGN_LEFT_MID, 14, 0);
+    // lv_obj_align(img, LV_ALIGN_LEFT_MID, 14, 0);
+    lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 7, 0);
     ui.satellite.img = img;
 
-    lv_obj_t *label = lv_label_create(cont);
+    label = lv_label_create(cont);
     lv_obj_add_style(label, &style_label, 0);
     lv_obj_align_to(label, ui.satellite.img, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
     lv_label_set_text(label, "0");
@@ -515,13 +550,6 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
 
     /* sd card */
     ui.imgSD = StatusBar_SdCardImage_Create(cont);
-
-    /* clock */
-    label = lv_label_create(cont);
-    lv_obj_add_style(label, &style_label, 0);
-    lv_label_set_text(label, "00:00");
-    lv_obj_center(label);
-    ui.labelClock = label;
 
     /* recorder */
     ui.labelRec = StatusBar_RecAnimLabelCreate(cont);

@@ -108,6 +108,7 @@ typedef enum
 {
     SYSCONFIG_CMD_LOAD,
     SYSCONFIG_CMD_SAVE,
+    SYSCONFIG_CMD_SET_USB_MSC_ENABLE,
 } SysConfig_Cmd_t;
 
 typedef struct
@@ -122,6 +123,7 @@ typedef struct
     char mapDirPath[16];
     char mapExtName[8];
     bool mapWGS84;
+    bool usbMscEnable;
 } SysConfig_Info_t;
 
 /* TrackFilter */

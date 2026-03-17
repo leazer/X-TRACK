@@ -56,7 +56,7 @@ static void usb_vcp_cmd_process(void *udev, uint8_t cmd, uint8_t *buff, uint16_t
 static usb_sts_type cdc_class_setup_handler(void *udev, usb_setup_type *setup);
 static usb_sts_type msc_class_setup_handler(void *udev, usb_setup_type *setup);
 
-linecoding_type linecoding = 
+static linecoding_type cdc_msc_linecoding =
 {
   115200,
   0,
@@ -471,10 +471,10 @@ static usb_sts_type cdc_struct_init(cdc_msc_struct_type *pcdc)
   pcdc->g_tx_completed = 1;
   pcdc->g_rx_completed = 0;
   pcdc->alt_setting = 0;
-  pcdc->linecoding.bitrate = linecoding.bitrate;
-  pcdc->linecoding.data = linecoding.data;
-  pcdc->linecoding.format = linecoding.format;
-  pcdc->linecoding.parity = linecoding.parity;
+  pcdc->linecoding.bitrate = cdc_msc_linecoding.bitrate;
+  pcdc->linecoding.data = cdc_msc_linecoding.data;
+  pcdc->linecoding.format = cdc_msc_linecoding.format;
+  pcdc->linecoding.parity = cdc_msc_linecoding.parity;
   return USB_OK;
 }
 
@@ -484,7 +484,7 @@ static usb_sts_type cdc_struct_init(cdc_msc_struct_type *pcdc)
   * @param  recv_data: receive buffer
   * @retval receive data len                            
   */
-uint16_t usb_vcp_get_rxdata(void *udev, uint8_t *recv_data)
+uint16_t usb_vcp_get_rxdata_cdc_msc(void *udev, uint8_t *recv_data)
 {
   uint16_t i_index = 0;
   uint16_t tmp_len = 0;
@@ -514,7 +514,7 @@ uint16_t usb_vcp_get_rxdata(void *udev, uint8_t *recv_data)
   * @param  len: send length
   * @retval error status                            
   */
-error_status usb_vcp_send_data(void *udev, uint8_t *send_data, uint16_t len)
+error_status usb_vcp_send_data_cdc_msc(void *udev, uint8_t *send_data, uint16_t len)
 {
   error_status status = SUCCESS;
   usbd_core_type *pudev = (usbd_core_type *)udev;

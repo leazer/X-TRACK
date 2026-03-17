@@ -286,8 +286,10 @@ typedef struct
   * @{
   */
 extern usbd_class_handler cdc_msc_class_handler;  //cdc_class_handler;
-uint16_t usb_vcp_get_rxdata(void *udev, uint8_t *recv_data);
-error_status usb_vcp_send_data(void *udev, uint8_t *send_data, uint16_t len);
+/* 注意：工程同时编译了 standalone CDC 与 composite CDC+MSC，
+ * 为避免与 cdc_class.c 的符号冲突，这里使用带前缀的 VCP API。 */
+uint16_t usb_vcp_get_rxdata_cdc_msc(void *udev, uint8_t *recv_data);
+error_status usb_vcp_send_data_cdc_msc(void *udev, uint8_t *send_data, uint16_t len);
 
 void bot_scsi_init(void *udev);
 void bot_scsi_reset(void *udev);

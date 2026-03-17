@@ -1,7 +1,11 @@
 /**
- * USB 设备模块：使用 Libraries/AT32USB 的 composite_cdc_msc
- * - 设备：OTGFS1，全速
- * - 功能：CDC(VCP) + MSC(SD 卡映射)
+ * USB 设备模块：
+ * - 默认：CDC(VCP)
+ * - 可选：CDC(VCP) + MSC(SD 卡映射)
+ *
+ * 说明：
+ * - 某些场景（如上电默认只暴露串口）需要避免 MSC 枚举；
+ * - 当 UI 打开 MSC 开关后，通过重新初始化 USB 设备栈触发重枚举，变为 CDC+MSC。
  */
 
 #include "mcu_type.h"
@@ -12,12 +16,19 @@
 
 #include "USB_Device.h"
 
+/* class/descriptor */
+#include "usbd_class/cdc/cdc_class.h"
+#include "usbd_class/cdc/cdc_desc.h"
+
 /* composite cdc + msc class/descriptor */
 #include "usbd_class/composite_cdc_msc/cdc_msc_class.h"
 #include "usbd_class/composite_cdc_msc/cdc_msc_desc.h"
 
 /* 全局 OTG 设备核心 */
 static otg_core_type s_otg_core;
+
+/* 当前 MSC 使能状态（默认关闭：仅 CDC） */
+static volatile uint8_t s_usb_msc_enable = 0;
 
 
 static void usb_clock48m_select(void)
@@ -120,18 +131,56 @@ static void USB_Device_LowLevelInit(void)
 
 void USB_Device_Init(void)
 {
-  /* 低层时钟 / GPIO */
-  USB_Device_LowLevelInit();
+  static uint8_t inited = 0;
 
-  /* 设备栈初始化：全速、OTG1、Composite CDC+MSC */
-  usbd_init(&s_otg_core,
-            USB_FULL_SPEED_CORE_ID,
-            USB_OTG1_ID,
-            &cdc_msc_class_handler,
-            &cdc_msc_desc_handler);
+  if (!inited)
+  {
+    /* 低层时钟 / GPIO */
+    USB_Device_LowLevelInit();
 
-  /* 使能 OTGFS1 中断 */
-  nvic_irq_enable(OTGFS1_IRQn, 2, 0);
+    /* 使能 OTGFS1 中断 */
+    nvic_irq_enable(OTGFS1_IRQn, 2, 0);
+    inited = 1;
+  }
+
+  /* 默认只启动 CDC；若 s_usb_msc_enable=1，则启动 CDC+MSC */
+  if (s_usb_msc_enable)
+  {
+    usbd_init(&s_otg_core,
+              USB_FULL_SPEED_CORE_ID,
+              USB_OTG1_ID,
+              &cdc_msc_class_handler,
+              &cdc_msc_desc_handler);
+  }
+  else
+  {
+    usbd_init(&s_otg_core,
+              USB_FULL_SPEED_CORE_ID,
+              USB_OTG1_ID,
+              &cdc_class_handler,
+              &cdc_desc_handler);
+  }
+}
+
+uint8_t USB_Device_GetMscEnable(void)
+{
+  return s_usb_msc_enable ? 1 : 0;
+}
+
+void USB_Device_SetMscEnable(uint8_t en)
+{
+  en = en ? 1 : 0;
+  if (s_usb_msc_enable == en)
+  {
+    return;
+  }
+
+  s_usb_msc_enable = en;
+
+  /* 触发重枚举：先断开，再重新初始化（会在 core_init 中 connect） */
+  usbd_disconnect(&s_otg_core.dev);
+  delay_ms(50);
+  USB_Device_Init();
 }
 
 /**
@@ -150,7 +199,15 @@ void OTGFS1_IRQHandler(void)
  */
 uint16_t USB_VCP_Read(uint8_t* buf, uint16_t buf_len)
 {
-  uint16_t len = usb_vcp_get_rxdata(&s_otg_core.dev, buf);
+  uint16_t len = 0;
+  if (s_usb_msc_enable)
+  {
+    len = usb_vcp_get_rxdata_cdc_msc(&s_otg_core.dev, buf);
+  }
+  else
+  {
+    len = usb_vcp_get_rxdata(&s_otg_core.dev, buf);
+  }
   if (len > buf_len)
   {
     /* 防御性裁剪，正常情况下不会超过 64 字节 */
@@ -167,7 +224,17 @@ uint16_t USB_VCP_Read(uint8_t* buf, uint16_t buf_len)
  */
 uint8_t USB_VCP_Write(const uint8_t* buf, uint16_t len)
 {
-  if (usb_vcp_send_data(&s_otg_core.dev, (uint8_t*)buf, len) == SUCCESS)
+  error_status st;
+  if (s_usb_msc_enable)
+  {
+    st = usb_vcp_send_data_cdc_msc(&s_otg_core.dev, (uint8_t*)buf, len);
+  }
+  else
+  {
+    st = usb_vcp_send_data(&s_otg_core.dev, (uint8_t*)buf, len);
+  }
+
+  if (st == SUCCESS)
   {
     return (uint8_t)len;
   }

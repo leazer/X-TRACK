@@ -22,6 +22,8 @@ static int onEvent(Account* account, Account::EventParam_t* param)
         if (info->cmd == SYSCONFIG_CMD_LOAD)
         {
             HAL::Buzz_SetEnable(sysConfig.soundEnable);
+            /* 应用 USB MSC 开关（LOAD 后立即生效） */
+            HAL::USB_SetMscEnable(sysConfig.usbMscEnable);
         }
         else if (info->cmd == SYSCONFIG_CMD_SAVE)
         {
@@ -36,6 +38,11 @@ static int onEvent(Account* account, Account::EventParam_t* param)
                 sysConfig.longitude = (float)gpsInfo.longitude;
                 sysConfig.latitude = (float)gpsInfo.latitude;
             }
+        }
+        else if (info->cmd == SYSCONFIG_CMD_SET_USB_MSC_ENABLE)
+        {
+            sysConfig.usbMscEnable = info->usbMscEnable;
+            HAL::USB_SetMscEnable(sysConfig.usbMscEnable);
         }
     }
     break;
@@ -75,6 +82,7 @@ do{ \
     SYSCGF_STRCPY(sysConfig.mapDirPath, CONFIG_MAP_DIR_PATH_DEFAULT);
     SYSCGF_STRCPY(sysConfig.mapExtName, CONFIG_MAP_EXT_NAME_DEFAULT);
     sysConfig.mapWGS84    = CONFIG_MAP_USE_WGS84_DEFAULT;
+    sysConfig.usbMscEnable = false;
 
     STORAGE_VALUE_REG(account, sysConfig.longitude, STORAGE_TYPE_FLOAT);
     STORAGE_VALUE_REG(account, sysConfig.latitude, STORAGE_TYPE_FLOAT);
@@ -86,4 +94,5 @@ do{ \
     STORAGE_VALUE_REG(account, sysConfig.mapDirPath, STORAGE_TYPE_STRING);
     STORAGE_VALUE_REG(account, sysConfig.mapExtName, STORAGE_TYPE_STRING);
     STORAGE_VALUE_REG(account, sysConfig.mapWGS84, STORAGE_TYPE_INT);
+    STORAGE_VALUE_REG(account, sysConfig.usbMscEnable, STORAGE_TYPE_INT);
 }

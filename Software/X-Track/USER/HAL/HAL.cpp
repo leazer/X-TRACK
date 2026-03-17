@@ -66,7 +66,7 @@ void HAL::HAL_Init()
     Audio_Init();
     SD_Init();
 
-    USB_Device_Init();
+    USB_Init();
 
     Display_Init();
 
