@@ -99,6 +99,9 @@
     <ClInclude Include="..\..\USER\App\Pages\LiveMap\LiveMap.h" />
     <ClInclude Include="..\..\USER\App\Pages\LiveMap\LiveMapModel.h" />
     <ClInclude Include="..\..\USER\App\Pages\LiveMap\LiveMapView.h" />
+    <ClInclude Include="..\..\USER\App\Pages\MainMenu\MainMenu.h" />
+    <ClInclude Include="..\..\USER\App\Pages\MainMenu\MainMenuModel.h" />
+    <ClInclude Include="..\..\USER\App\Pages\MainMenu\MainMenuView.h" />
     <ClInclude Include="..\..\USER\App\Pages\Page.h" />
     <ClInclude Include="..\..\USER\App\Pages\Startup\Startup.h" />
     <ClInclude Include="..\..\USER\App\Pages\Startup\StartupModel.h" />
@@ -312,6 +315,9 @@
     <ClCompile Include="..\..\USER\App\Pages\LiveMap\LiveMap.cpp" />
     <ClCompile Include="..\..\USER\App\Pages\LiveMap\LiveMapModel.cpp" />
     <ClCompile Include="..\..\USER\App\Pages\LiveMap\LiveMapView.cpp" />
+    <ClCompile Include="..\..\USER\App\Pages\MainMenu\MainMenu.cpp" />
+    <ClCompile Include="..\..\USER\App\Pages\MainMenu\MainMenuModel.cpp" />
+    <ClCompile Include="..\..\USER\App\Pages\MainMenu\MainMenuView.cpp" />
     <ClCompile Include="..\..\USER\App\Pages\Startup\Startup.cpp" />
     <ClCompile Include="..\..\USER\App\Pages\Startup\StartupModel.cpp" />
     <ClCompile Include="..\..\USER\App\Pages\Startup\StartupView.cpp" />
@@ -393,6 +399,7 @@
     <ClCompile Include="..\..\USER\App\Utils\WString\WString.cpp" />
     <ClCompile Include="HAL\HAL.cpp" />
     <ClCompile Include="HAL\HAL_Audio.cpp" />
+    <ClCompile Include="HAL\HAL_Backlight.cpp" />
     <ClCompile Include="HAL\HAL_Buzz.cpp" />
     <ClCompile Include="HAL\HAL_Clock.cpp" />
     <ClCompile Include="HAL\HAL_Encoder.cpp" />

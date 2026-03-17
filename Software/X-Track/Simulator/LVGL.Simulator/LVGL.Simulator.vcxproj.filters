@@ -418,6 +418,9 @@
     <Filter Include="lvgl\examples\anim">
       <UniqueIdentifier>{effdcfb6-96d7-4c48-b546-18ac6c30c910}</UniqueIdentifier>
     </Filter>
+    <Filter Include="App\Pages\MainMenu">
+      <UniqueIdentifier>{724b75d4-cb22-4fc1-9ec1-ce4adcfca8de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lvgl\examples\get_started\lv_example_get_started.h">
@@ -1037,6 +1040,15 @@
     </ClInclude>
     <ClInclude Include="lvgl\examples\anim\lv_example_anim.h">
       <Filter>lvgl\examples\anim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USER\App\Pages\MainMenu\MainMenu.h">
+      <Filter>App\Pages\MainMenu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USER\App\Pages\MainMenu\MainMenuModel.h">
+      <Filter>App\Pages\MainMenu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USER\App\Pages\MainMenu\MainMenuView.h">
+      <Filter>App\Pages\MainMenu</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2107,6 +2119,18 @@
     </ClCompile>
     <ClCompile Include="lvgl\examples\anim\lv_example_anim_timeline_1.c">
       <Filter>lvgl\examples\anim</Filter>
+    </ClCompile>
+    <ClCompile Include="HAL\HAL_Backlight.cpp">
+      <Filter>HAL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USER\App\Pages\MainMenu\MainMenu.cpp">
+      <Filter>App\Pages\MainMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USER\App\Pages\MainMenu\MainMenuModel.cpp">
+      <Filter>App\Pages\MainMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USER\App\Pages\MainMenu\MainMenuView.cpp">
+      <Filter>App\Pages\MainMenu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
