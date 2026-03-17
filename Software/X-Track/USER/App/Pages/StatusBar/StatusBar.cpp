@@ -343,13 +343,19 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_event_cb(slider_volume, StatusBar_OnVolumeSliderChange, LV_EVENT_VALUE_CHANGED, nullptr);
 
     // USB MSC 开关
-    lv_obj_t *label_usb = lv_label_create(ui.configWindow);
+    lv_obj_t *cont_usb = lv_obj_create(ui.configWindow);
+    lv_obj_remove_style_all(cont_usb);
+    lv_obj_set_size(cont_usb, CONFIG_WINDOW_WIDTH - 20, 30);
+    lv_obj_align(cont_usb, LV_ALIGN_TOP_LEFT, 0, 175);
+    lv_obj_clear_flag(cont_usb, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_flex_flow(cont_usb, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(cont_usb, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t *label_usb = lv_label_create(cont_usb);
     lv_obj_add_style(label_usb, &style_label, 0);
     lv_label_set_text(label_usb, "USB MSC");
-    lv_obj_align(label_usb, LV_ALIGN_TOP_LEFT, 0, 180);
 
-    lv_obj_t *sw_usb = lv_switch_create(ui.configWindow);
-    lv_obj_align(sw_usb, LV_ALIGN_TOP_LEFT, CONFIG_WINDOW_WIDTH - 70, 175);
+    lv_obj_t *sw_usb = lv_switch_create(cont_usb);
     if (HAL::USB_GetMscEnable())
     {
         lv_obj_add_state(sw_usb, LV_STATE_CHECKED);
