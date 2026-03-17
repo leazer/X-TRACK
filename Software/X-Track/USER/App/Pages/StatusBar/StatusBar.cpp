@@ -50,7 +50,7 @@ static void StatusBar_OnVolumeSliderChange(lv_event_t *e);
 static void StatusBar_ConfigWindowClose();
 
 // 创建配置窗口
-static void StatusBar_ConfigWindowCreate(lv_obj_t *par);
+static void StatusBar_ConfigWindowCreate(void);
 
 // 配置窗口背景点击处理 - 点击窗口外关闭
 static void StatusBar_OnConfigWindowBgClick(lv_event_t *e);

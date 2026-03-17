@@ -3,8 +3,13 @@
 
 DATA_PROC_INIT_DEF(IMU)
 {
-    HAL::IMU_SetCommitCallback([](void* info, void* userData){
-        Account* account = (Account*)userData;
-        return account->Commit(info, sizeof(HAL::IMU_Info_t));
-    }, account);
+    /* NOTE: KEIL (non-C++11) doesn't support lambda. */
+    extern bool DP_IMU_CommitThunk(void* info, void* userData);
+    HAL::IMU_SetCommitCallback(DP_IMU_CommitThunk, account);
+}
+
+bool DP_IMU_CommitThunk(void* info, void* userData)
+{
+    Account* account = (Account*)userData;
+    return account->Commit(info, sizeof(HAL::IMU_Info_t));
 }
