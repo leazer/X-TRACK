@@ -16,13 +16,20 @@
 
 #include "USB_Device.h"
 
-/* class/descriptor */
-#include "usbd_class/cdc/cdc_class.h"
-#include "usbd_class/cdc/cdc_desc.h"
+/* Avoid including both CDC and CDC+MSC headers here (they share macro names and
+ * cause redefinition warnings in some toolchains). We only need the handlers
+ * and VCP API symbols. */
+extern usbd_class_handler cdc_class_handler;
+extern usbd_desc_handler  cdc_desc_handler;
 
-/* composite cdc + msc class/descriptor */
-#include "usbd_class/composite_cdc_msc/cdc_msc_class.h"
-#include "usbd_class/composite_cdc_msc/cdc_msc_desc.h"
+extern usbd_class_handler cdc_msc_class_handler;
+extern usbd_desc_handler  cdc_msc_desc_handler;
+
+uint16_t usb_vcp_get_rxdata(void *udev, uint8_t *recv_data);
+error_status usb_vcp_send_data(void *udev, uint8_t *send_data, uint16_t len);
+
+uint16_t usb_vcp_get_rxdata_cdc_msc(void *udev, uint8_t *recv_data);
+error_status usb_vcp_send_data_cdc_msc(void *udev, uint8_t *send_data, uint16_t len);
 
 /* 全局 OTG 设备核心 */
 static otg_core_type s_otg_core;
