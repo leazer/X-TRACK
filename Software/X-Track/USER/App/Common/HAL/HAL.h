@@ -24,6 +24,7 @@
 #define __HAL_H
 
 #include <stdint.h>
+#include "App/Common/Compat.h"
 #include "HAL_Def.h"
 
 /* LED flash count: always on */
@@ -82,6 +83,13 @@ float SD_GetCardSizeMB();
 const char* SD_GetTypeName();
 typedef void(*SD_CallbackFunction_t)(bool insert);
 void SD_SetEventCallback(SD_CallbackFunction_t callback);
+
+/* USB */
+void USB_Init();
+bool USB_GetMscEnable();
+void USB_SetMscEnable(bool en);
+uint16_t USB_VCP_Read(uint8_t* buf, uint16_t buf_len);
+uint8_t  USB_VCP_Write(const uint8_t* buf, uint16_t len);
 
 /* Power */
 void Power_Init();

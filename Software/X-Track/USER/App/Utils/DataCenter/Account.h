@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include "App/Common/Compat.h"
 #include "PingPongBuffer/PingPongBuffer.h"
 #include "lvgl/lvgl.h"
 

@@ -24,6 +24,7 @@
 #define __PAGE_BASE_H
 
 #include "lvgl/lvgl.h"
+#include "App/Common/Compat.h"
 
 /* Generate stash area data */
 #define PAGE_STASH_MAKE(data) {&(data), sizeof(data)}
