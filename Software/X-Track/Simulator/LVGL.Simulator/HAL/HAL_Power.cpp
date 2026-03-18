@@ -30,3 +30,8 @@ void HAL::Power_SetEventCallback(Power_CallbackFunction_t callback)
 {
 
 }
+
+void HAL::Power_Shutdown()
+{
+    // 模拟器中不真正关机，这里可以根据需要添加退出逻辑，目前留空即可
+}

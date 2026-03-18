@@ -1997,6 +1997,9 @@
     <ClCompile Include="HAL\HAL_SD_CARD.cpp">
       <Filter>HAL</Filter>
     </ClCompile>
+    <ClCompile Include="HAL\HAL_USB.cpp">
+      <Filter>HAL</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\USER\App\Utils\new\new.cpp">
       <Filter>App\Utils\new</Filter>
     </ClCompile>

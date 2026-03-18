@@ -408,6 +408,7 @@
     <ClCompile Include="HAL\HAL_MAG.cpp" />
     <ClCompile Include="HAL\HAL_Power.cpp" />
     <ClCompile Include="HAL\HAL_SD_CARD.cpp" />
+    <ClCompile Include="HAL\HAL_USB.cpp" />
     <ClCompile Include="lvgl\examples\anim\lv_example_anim_1.c" />
     <ClCompile Include="lvgl\examples\anim\lv_example_anim_2.c" />
     <ClCompile Include="lvgl\examples\anim\lv_example_anim_3.c" />
