@@ -26,9 +26,6 @@
 #include "Utils/lv_anim_label/lv_anim_label.h"
 #include "HAL/HAL.h"
 
-#define BATT_USAGE_HEIGHT (lv_obj_get_style_height(ui.battery.img, 0) - 6)
-#define BATT_USAGE_WIDTH (lv_obj_get_style_width(ui.battery.img, 0) - 4)
-
 #define STATUS_BAR_HEIGHT 25
 
 #define CONFIG_WINDOW_WIDTH 200
@@ -36,6 +33,17 @@
 #define CONFIG_SLIDER_HEIGHT 30
 
 static Account *actStatusBar;
+static Page::StatusBar s_statusBar;
+
+static inline lv_coord_t BATT_USAGE_HEIGHT()
+{
+    return lv_obj_get_style_height(s_statusBar.ui.battery.img, 0) - 6;
+}
+
+static inline lv_coord_t BATT_USAGE_WIDTH()
+{
+    return lv_obj_get_style_width(s_statusBar.ui.battery.img, 0) - 4;
+}
 
 // 配置窗口滑块事件处理 - 关机
 static void StatusBar_OnPowerSliderChange(lv_event_t *e);
@@ -59,32 +67,6 @@ static void StatusBar_OnConfigWindowBgClick(lv_event_t *e);
 static void StatusBar_OnBatteryClick(lv_event_t *e);
 
 static void StatusBar_AnimCreate(lv_obj_t *contBatt);
-
-struct
-{
-    lv_obj_t *cont;
-
-    struct
-    {
-        lv_obj_t *img;
-        lv_obj_t *label;
-    } satellite;
-
-    lv_obj_t *imgSD;
-
-    lv_obj_t *labelClock;
-
-    lv_obj_t *labelRec;
-
-    struct
-    {
-        lv_obj_t *img;
-        lv_obj_t *objUsage;
-        lv_obj_t *label;
-    } battery;
-    lv_obj_t *configWindow;
-
-} ui;
 
 static void StatusBar_ConBattSetOpa(lv_obj_t *obj, int32_t opa)
 {
@@ -119,7 +101,7 @@ static void StatusBar_AnimCreate(lv_obj_t *contBatt)
     lv_anim_set_var(&a, contBatt);
     lv_anim_set_exec_cb(&a, [](void *var, int32_t v)
                         { lv_obj_set_height((lv_obj_t *)var, v); });
-    lv_anim_set_values(&a, 0, BATT_USAGE_HEIGHT);
+    lv_anim_set_values(&a, 0, BATT_USAGE_HEIGHT());
     lv_anim_set_time(&a, 1000);
     lv_anim_set_ready_cb(&a, StatusBar_onAnimHeightFinish);
     lv_anim_start(&a);
@@ -234,15 +216,15 @@ static void StatusBar_OnUsbMscSwitchChange(lv_event_t *e)
 // 关闭配置窗口
 static void StatusBar_ConfigWindowClose()
 {
-    if (ui.configWindow != nullptr)
+    if (s_statusBar.ui.configWindow != nullptr)
     {
-        lv_obj_del(ui.configWindow);
-        ui.configWindow = nullptr;
+        lv_obj_del(s_statusBar.ui.configWindow);
+        s_statusBar.ui.configWindow = nullptr;
     }
     // 获取statusbar容器的父对象（通常是屏幕）
-    lv_obj_t *par = lv_obj_get_parent(ui.cont);
-    lv_obj_remove_event_cb(ui.cont, StatusBar_OnConfigWindowBgClick);
-    lv_obj_clear_flag(ui.cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_t *par = lv_obj_get_parent(s_statusBar.ui.cont);
+    lv_obj_remove_event_cb(s_statusBar.ui.cont, StatusBar_OnConfigWindowBgClick);
+    lv_obj_clear_flag(s_statusBar.ui.cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_remove_event_cb(par, StatusBar_OnConfigWindowBgClick);
     lv_obj_clear_flag(par, LV_OBJ_FLAG_CLICKABLE);
 }
@@ -250,28 +232,28 @@ static void StatusBar_ConfigWindowClose()
 // 创建配置窗口
 static void StatusBar_ConfigWindowCreate(void)
 {
-    if (ui.configWindow != nullptr)
+    if (s_statusBar.ui.configWindow != nullptr)
     {
         return; // 已经存在配置窗口
     }
     // 获取statusbar容器的父对象（通常是屏幕）
-    lv_obj_t *par = lv_obj_get_parent(ui.cont);
-    lv_obj_add_event_cb(ui.cont, StatusBar_OnConfigWindowBgClick, LV_EVENT_CLICKED, nullptr);
-    lv_obj_add_flag(ui.cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_t *par = lv_obj_get_parent(s_statusBar.ui.cont);
+    lv_obj_add_event_cb(s_statusBar.ui.cont, StatusBar_OnConfigWindowBgClick, LV_EVENT_CLICKED, nullptr);
+    lv_obj_add_flag(s_statusBar.ui.cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(par, StatusBar_OnConfigWindowBgClick, LV_EVENT_CLICKED, nullptr);
     lv_obj_add_flag(par, LV_OBJ_FLAG_CLICKABLE);
 
     // 创建主容器
-    ui.configWindow = lv_obj_create(par);
-    lv_obj_set_size(ui.configWindow, CONFIG_WINDOW_WIDTH, CONFIG_WINDOW_HEIGHT);
-    lv_obj_center(ui.configWindow);
-    lv_obj_set_style_bg_color(ui.configWindow, lv_color_hex(0x2a2a2a), 0);
-    lv_obj_set_style_bg_opa(ui.configWindow, LV_OPA_100, 0);
-    lv_obj_set_style_border_color(ui.configWindow, lv_color_hex(0x555555), 0);
-    lv_obj_set_style_border_width(ui.configWindow, 1, 0);
-    lv_obj_set_style_radius(ui.configWindow, 10, 0);
-    lv_obj_set_style_pad_all(ui.configWindow, 10, 0);
-    lv_obj_clear_flag(ui.configWindow, LV_OBJ_FLAG_SCROLLABLE);
+    s_statusBar.ui.configWindow = lv_obj_create(par);
+    lv_obj_set_size(s_statusBar.ui.configWindow, CONFIG_WINDOW_WIDTH, CONFIG_WINDOW_HEIGHT);
+    lv_obj_center(s_statusBar.ui.configWindow);
+    lv_obj_set_style_bg_color(s_statusBar.ui.configWindow, lv_color_hex(0x2a2a2a), 0);
+    lv_obj_set_style_bg_opa(s_statusBar.ui.configWindow, LV_OPA_100, 0);
+    lv_obj_set_style_border_color(s_statusBar.ui.configWindow, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_border_width(s_statusBar.ui.configWindow, 1, 0);
+    lv_obj_set_style_radius(s_statusBar.ui.configWindow, 10, 0);
+    lv_obj_set_style_pad_all(s_statusBar.ui.configWindow, 10, 0);
+    lv_obj_clear_flag(s_statusBar.ui.configWindow, LV_OBJ_FLAG_SCROLLABLE);
 
     // 标签样式
     static lv_style_t style_label;
@@ -302,14 +284,14 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_style_set_radius(&style_slider_knob, 5);
 
     // 标题
-    lv_obj_t *title = lv_label_create(ui.configWindow);
+    lv_obj_t *title = lv_label_create(s_statusBar.ui.configWindow);
     lv_obj_add_style(title, &style_label, 0);
     lv_label_set_text(title, "System Setting");
     lv_obj_set_width(title, CONFIG_WINDOW_WIDTH - 20);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 0);
 
     // 关机滑块
-    lv_obj_t *slider_power = lv_slider_create(ui.configWindow);
+    lv_obj_t *slider_power = lv_slider_create(s_statusBar.ui.configWindow);
     lv_obj_set_width(slider_power, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_power, 24);
     lv_slider_set_range(slider_power, 0, 100);
@@ -326,7 +308,7 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_RELEASED, label_power);
 
     // 亮度滑块
-    lv_obj_t *slider_brightness = lv_slider_create(ui.configWindow);
+    lv_obj_t *slider_brightness = lv_slider_create(s_statusBar.ui.configWindow);
     lv_obj_set_width(slider_brightness, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_brightness, 24);
     lv_slider_set_range(slider_brightness, 0, 1000);
@@ -342,7 +324,7 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_event_cb(slider_brightness, StatusBar_OnBrightnessSliderChange, LV_EVENT_VALUE_CHANGED, label_brightness);
 
     // 音量滑块
-    lv_obj_t *slider_volume = lv_slider_create(ui.configWindow);
+    lv_obj_t *slider_volume = lv_slider_create(s_statusBar.ui.configWindow);
     lv_obj_set_width(slider_volume, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_volume, 24);
     lv_slider_set_range(slider_volume, 0, 100);
@@ -358,7 +340,7 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_event_cb(slider_volume, StatusBar_OnVolumeSliderChange, LV_EVENT_VALUE_CHANGED, label_volume);
 
     // USB MSC 开关
-    lv_obj_t *cont_usb = lv_obj_create(ui.configWindow);
+    lv_obj_t *cont_usb = lv_obj_create(s_statusBar.ui.configWindow);
     lv_obj_remove_style_all(cont_usb);
     lv_obj_set_size(cont_usb, CONFIG_WINDOW_WIDTH - 20, 30);
     lv_obj_align(cont_usb, LV_ALIGN_TOP_LEFT, 0, 175);
@@ -384,7 +366,7 @@ static void StatusBar_OnBatteryClick(lv_event_t *e)
 {
     if (e->code == LV_EVENT_CLICKED)
     {
-        if (ui.configWindow == nullptr)
+        if (s_statusBar.ui.configWindow == nullptr)
         {
             StatusBar_ConfigWindowCreate();
         }
@@ -404,7 +386,7 @@ static void StatusBar_OnConfigWindowBgClick(lv_event_t *e)
         lv_obj_t *clicked_obj = lv_event_get_target(e);
 
         // 如果点击的是背景而不是窗口，关闭窗口
-        if (clicked_obj != ui.configWindow)
+        if (clicked_obj != s_statusBar.ui.configWindow)
         {
             StatusBar_ConfigWindowClose();
         }
@@ -417,31 +399,31 @@ static void StatusBar_Update(lv_timer_t *timer)
     HAL::GPS_Info_t gps;
     if (actStatusBar->Pull("GPS", &gps, sizeof(gps)) == Account::RES_OK)
     {
-        lv_label_set_text_fmt(ui.satellite.label, "%d", gps.satellites);
+        lv_label_set_text_fmt(s_statusBar.ui.satellite.label, "%d", gps.satellites);
     }
 
     DataProc::Storage_Basic_Info_t sdInfo;
     if (actStatusBar->Pull("Storage", &sdInfo, sizeof(sdInfo)) == Account::RES_OK)
     {
-        sdInfo.isDetect ? lv_obj_clear_state(ui.imgSD, LV_STATE_DISABLED) : lv_obj_add_state(ui.imgSD, LV_STATE_DISABLED);
+        sdInfo.isDetect ? lv_obj_clear_state(s_statusBar.ui.imgSD, LV_STATE_DISABLED) : lv_obj_add_state(s_statusBar.ui.imgSD, LV_STATE_DISABLED);
     }
 
     /* clock */
     HAL::Clock_Info_t clock;
     if (actStatusBar->Pull("Clock", &clock, sizeof(clock)) == Account::RES_OK)
     {
-        lv_label_set_text_fmt(ui.labelClock, "%02d:%02d", clock.hour, clock.minute);
+        lv_label_set_text_fmt(s_statusBar.ui.labelClock, "%02d:%02d", clock.hour, clock.minute);
     }
 
     /* battery */
     HAL::Power_Info_t power;
     if (actStatusBar->Pull("Power", &power, sizeof(power)) == Account::RES_OK)
     {
-        lv_label_set_text_fmt(ui.battery.label, "%d", power.usage);
+        lv_label_set_text_fmt(s_statusBar.ui.battery.label, "%d", power.usage);
     }
 
     bool Is_BattCharging = power.isCharging;
-    lv_obj_t *contBatt = ui.battery.objUsage;
+    lv_obj_t *contBatt = s_statusBar.ui.battery.objUsage;
     static bool Is_BattChargingAnimActive = false;
     if (Is_BattCharging)
     {
@@ -459,7 +441,7 @@ static void StatusBar_Update(lv_timer_t *timer)
             StatusBar_ConBattSetOpa(contBatt, LV_OPA_COVER);
             Is_BattChargingAnimActive = false;
         }
-        lv_coord_t height = lv_map(power.usage, 0, 100, 0, BATT_USAGE_HEIGHT);
+        lv_coord_t height = lv_map(power.usage, 0, 100, 0, BATT_USAGE_HEIGHT());
         lv_obj_set_height(contBatt, height);
     }
 }
@@ -520,7 +502,7 @@ static lv_obj_t *StatusBar_SdCardImage_Create(lv_obj_t *par)
 
 static void StatusBar_SetStyle(DataProc::StatusBar_Style_t style)
 {
-    lv_obj_t *cont = ui.cont;
+    lv_obj_t *cont = s_statusBar.ui.cont;
     switch (style)
     {
     case DataProc::STATUS_BAR_STYLE_TRANSP:
@@ -535,7 +517,7 @@ static void StatusBar_SetStyle(DataProc::StatusBar_Style_t style)
     }
 }
 
-lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
+lv_obj_t *Page::StatusBar::Create(lv_obj_t *par)
 {
     lv_obj_t *cont = lv_obj_create(par);
     lv_obj_remove_style_all(cont);
@@ -543,7 +525,7 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
     lv_obj_set_size(cont, LV_HOR_RES, STATUS_BAR_HEIGHT);
     lv_obj_set_y(cont, -STATUS_BAR_HEIGHT);
     StatusBar_StyleInit(cont);
-    ui.cont = cont;
+    s_statusBar.ui.cont = cont;
 
     static lv_style_t style_label;
     lv_style_init(&style_label);
@@ -555,26 +537,26 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
     lv_obj_add_style(label, &style_label, 0);
     lv_label_set_text(label, "00:00");
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 7, 0);
-    ui.labelClock = label;
+    s_statusBar.ui.labelClock = label;
 
     /* satellite */
     lv_obj_t *img = lv_img_create(cont);
     lv_img_set_src(img, ResourcePool::GetImage("satellite"));
     // lv_obj_align(img, LV_ALIGN_LEFT_MID, 14, 0);
     lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 7, 0);
-    ui.satellite.img = img;
+    s_statusBar.ui.satellite.img = img;
 
     label = lv_label_create(cont);
     lv_obj_add_style(label, &style_label, 0);
-    lv_obj_align_to(label, ui.satellite.img, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+    lv_obj_align_to(label, s_statusBar.ui.satellite.img, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
     lv_label_set_text(label, "0");
-    ui.satellite.label = label;
+    s_statusBar.ui.satellite.label = label;
 
     /* sd card */
-    ui.imgSD = StatusBar_SdCardImage_Create(cont);
+    s_statusBar.ui.imgSD = StatusBar_SdCardImage_Create(cont);
 
     /* recorder */
-    ui.labelRec = StatusBar_RecAnimLabelCreate(cont);
+    s_statusBar.ui.labelRec = StatusBar_RecAnimLabelCreate(cont);
 
     /* battery */
     img = lv_img_create(cont);
@@ -582,7 +564,7 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
     lv_obj_align(img, LV_ALIGN_RIGHT_MID, -35, 0);
     lv_img_t *img_ext = (lv_img_t *)img;
     lv_obj_set_size(img, img_ext->w, img_ext->h);
-    ui.battery.img = img;
+    s_statusBar.ui.battery.img = img;
 
     // 创建容器包含电池图标和标签，扩大点击区域
     lv_obj_t *contBatteryClickArea = lv_obj_create(cont);
@@ -595,25 +577,30 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
 
     lv_obj_t *batteryLabel = lv_label_create(cont);
     lv_obj_add_style(batteryLabel, &style_label, 0);
-    lv_obj_align_to(batteryLabel, ui.battery.img, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+    lv_obj_align_to(batteryLabel, s_statusBar.ui.battery.img, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
     lv_label_set_text(batteryLabel, "100%");
-    ui.battery.label = batteryLabel;
+    s_statusBar.ui.battery.label = batteryLabel;
 
-    lv_obj_t *obj = lv_obj_create(ui.battery.img);
+    lv_obj_t *obj = lv_obj_create(s_statusBar.ui.battery.img);
     lv_obj_remove_style_all(obj);
     lv_obj_set_style_bg_color(obj, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, 0);
     lv_obj_set_style_opa(obj, LV_OPA_COVER, 0);
-    lv_obj_set_size(obj, BATT_USAGE_WIDTH, BATT_USAGE_HEIGHT);
+    lv_obj_set_size(obj, BATT_USAGE_WIDTH(), BATT_USAGE_HEIGHT());
     lv_obj_align(obj, LV_ALIGN_BOTTOM_MID, 0, -2);
-    ui.battery.objUsage = obj;
+    s_statusBar.ui.battery.objUsage = obj;
 
     StatusBar_SetStyle(DataProc::STATUS_BAR_STYLE_TRANSP);
 
     lv_timer_t *timer = lv_timer_create(StatusBar_Update, 1000, nullptr);
     lv_timer_ready(timer);
 
-    return ui.cont;
+    return s_statusBar.ui.cont;
+}
+
+lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
+{
+    return Page::StatusBar::Create(par);
 }
 
 static void StatusBar_Appear(bool en)
@@ -630,7 +617,7 @@ static void StatusBar_Appear(bool en)
 
     lv_anim_t a;
     lv_anim_init(&a);
-    lv_anim_set_var(&a, ui.cont);
+    lv_anim_set_var(&a, s_statusBar.ui.cont);
     lv_anim_set_values(&a, start, end);
     lv_anim_set_time(&a, 500);
     lv_anim_set_delay(&a, 1000);
@@ -663,7 +650,7 @@ static int onEvent(Account *account, Account::EventParam_t *param)
         StatusBar_SetStyle(info->param.style);
         break;
     case DataProc::STATUS_BAR_CMD_SET_LABEL_REC:
-        lv_anim_label_push_text(ui.labelRec, info->param.labelRec.show ? info->param.labelRec.str : " ");
+        lv_anim_label_push_text(s_statusBar.ui.labelRec, info->param.labelRec.show ? info->param.labelRec.str : " ");
         break;
     default:
         return Account::RES_PARAM_ERROR;
