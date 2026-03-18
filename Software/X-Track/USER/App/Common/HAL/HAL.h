@@ -24,7 +24,7 @@
 #define __HAL_H
 
 #include <stdint.h>
-#include "App/Common/Compat.h"
+#include "../Compat.h"
 #include "HAL_Def.h"
 
 /* LED flash count: always on */
