@@ -167,6 +167,12 @@ static void StatusBar_OnPowerSliderChange(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *slider = lv_event_get_target(e);
     int32_t value = lv_slider_get_value(slider);
+    lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
+
+    if (label != nullptr)
+    {
+        lv_label_set_text_fmt(label, "PowerDown %d%%", (int)value);
+    }
 
     // 拖动过程中检查是否达到90%，达到立即关机
     if (code == LV_EVENT_RELEASED && value >= 95)
@@ -185,6 +191,12 @@ static void StatusBar_OnBrightnessSliderChange(lv_event_t *e)
 {
     lv_obj_t *slider = lv_event_get_target(e);
     int32_t value = lv_slider_get_value(slider);
+    lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
+
+    if (label != nullptr)
+    {
+        lv_label_set_text_fmt(label, "Light %d", (int)value);
+    }
 
     // TODO: 调用设置亮度函数
     HAL::Backlight_SetValue(value);
@@ -195,6 +207,12 @@ static void StatusBar_OnVolumeSliderChange(lv_event_t *e)
 {
     lv_obj_t *slider = lv_event_get_target(e);
     int32_t value = lv_slider_get_value(slider);
+    lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
+
+    if (label != nullptr)
+    {
+        lv_label_set_text_fmt(label, "Volume %d%%", (int)value);
+    }
 
     // TODO: 调用设置音量函数
     // HAL::Audio_SetVolume(value);
@@ -259,7 +277,7 @@ static void StatusBar_ConfigWindowCreate(void)
     static lv_style_t style_label;
     lv_style_init(&style_label);
     lv_style_set_text_color(&style_label, lv_color_white());
-    lv_style_set_text_font(&style_label, ResourcePool::GetFont("bahnschrift_17"));
+    lv_style_set_text_font(&style_label, ResourcePool::GetFont("bahnschrift_13"));
 
     // 滑块样式
     static lv_style_t style_slider_main;
@@ -291,11 +309,6 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 0);
 
     // 关机滑块
-    lv_obj_t *label_power = lv_label_create(ui.configWindow);
-    lv_obj_add_style(label_power, &style_label, 0);
-    lv_label_set_text(label_power, "powerdown");
-    lv_obj_align(label_power, LV_ALIGN_TOP_LEFT, 0, 30);
-
     lv_obj_t *slider_power = lv_slider_create(ui.configWindow);
     lv_obj_set_width(slider_power, CONFIG_WINDOW_WIDTH - 40);
     lv_obj_set_height(slider_power, 24);
@@ -305,42 +318,44 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_style(slider_power, &style_slider_main, LV_PART_MAIN);
     lv_obj_add_style(slider_power, &style_slider_indicator, LV_PART_INDICATOR);
     lv_obj_add_style(slider_power, &style_slider_knob, LV_PART_KNOB);
-    lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_VALUE_CHANGED, nullptr);
-    lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_RELEASED, nullptr);
+    lv_obj_t *label_power = lv_label_create(slider_power);
+    lv_obj_add_style(label_power, &style_label, 0);
+    lv_label_set_text(label_power, "PowerDown 0%");
+    lv_obj_center(label_power);
+    lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_VALUE_CHANGED, label_power);
+    lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_RELEASED, label_power);
 
     // 亮度滑块
-    lv_obj_t *label_brightness = lv_label_create(ui.configWindow);
-    lv_obj_add_style(label_brightness, &style_label, 0);
-    lv_label_set_text(label_brightness, "light");
-    lv_obj_align(label_brightness, LV_ALIGN_TOP_LEFT, 0, 80);
-
     lv_obj_t *slider_brightness = lv_slider_create(ui.configWindow);
     lv_obj_set_width(slider_brightness, CONFIG_WINDOW_WIDTH - 40);
-    lv_obj_set_height(slider_brightness, 4);
+    lv_obj_set_height(slider_brightness, 24);
     lv_slider_set_range(slider_brightness, 0, 1000);
     lv_slider_set_value(slider_brightness, HAL::Backlight_GetValue(), LV_ANIM_OFF); // 默认最大亮度
     lv_obj_align(slider_brightness, LV_ALIGN_TOP_LEFT, 10, 100);
     lv_obj_add_style(slider_brightness, &style_slider_main, LV_PART_MAIN);
     lv_obj_add_style(slider_brightness, &style_slider_indicator, LV_PART_INDICATOR);
     lv_obj_add_style(slider_brightness, &style_slider_knob, LV_PART_KNOB);
-    lv_obj_add_event_cb(slider_brightness, StatusBar_OnBrightnessSliderChange, LV_EVENT_VALUE_CHANGED, nullptr);
+    lv_obj_t *label_brightness = lv_label_create(slider_brightness);
+    lv_obj_add_style(label_brightness, &style_label, 0);
+    lv_label_set_text_fmt(label_brightness, "Light %d", (int)HAL::Backlight_GetValue());
+    lv_obj_center(label_brightness);
+    lv_obj_add_event_cb(slider_brightness, StatusBar_OnBrightnessSliderChange, LV_EVENT_VALUE_CHANGED, label_brightness);
 
     // 音量滑块
-    lv_obj_t *label_volume = lv_label_create(ui.configWindow);
-    lv_obj_add_style(label_volume, &style_label, 0);
-    lv_label_set_text(label_volume, "volume");
-    lv_obj_align(label_volume, LV_ALIGN_TOP_LEFT, 0, 130);
-
     lv_obj_t *slider_volume = lv_slider_create(ui.configWindow);
     lv_obj_set_width(slider_volume, CONFIG_WINDOW_WIDTH - 40);
-    lv_obj_set_height(slider_volume, 4);
+    lv_obj_set_height(slider_volume, 24);
     lv_slider_set_range(slider_volume, 0, 100);
     lv_slider_set_value(slider_volume, 50, LV_ANIM_OFF); // 默认中等音量
     lv_obj_align(slider_volume, LV_ALIGN_TOP_LEFT, 10, 150);
     lv_obj_add_style(slider_volume, &style_slider_main, LV_PART_MAIN);
     lv_obj_add_style(slider_volume, &style_slider_indicator, LV_PART_INDICATOR);
     lv_obj_add_style(slider_volume, &style_slider_knob, LV_PART_KNOB);
-    lv_obj_add_event_cb(slider_volume, StatusBar_OnVolumeSliderChange, LV_EVENT_VALUE_CHANGED, nullptr);
+    lv_obj_t *label_volume = lv_label_create(slider_volume);
+    lv_obj_add_style(label_volume, &style_label, 0);
+    lv_label_set_text(label_volume, "Volume 50%");
+    lv_obj_center(label_volume);
+    lv_obj_add_event_cb(slider_volume, StatusBar_OnVolumeSliderChange, LV_EVENT_VALUE_CHANGED, label_volume);
 
     // USB MSC 开关
     lv_obj_t *cont_usb = lv_obj_create(ui.configWindow);
@@ -355,7 +370,8 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_style(label_usb, &style_label, 0);
     lv_label_set_text(label_usb, "USB MSC");
 
-    lv_obj_t *sw_usb = lv_switch_create(cont_usb);
+    lv_obj_t* sw_usb = lv_switch_create(cont_usb);
+    lv_obj_align(sw_usb, LV_ALIGN_TOP_LEFT, 0, 175);
     if (HAL::USB_GetMscEnable())
     {
         lv_obj_add_state(sw_usb, LV_STATE_CHECKED);
