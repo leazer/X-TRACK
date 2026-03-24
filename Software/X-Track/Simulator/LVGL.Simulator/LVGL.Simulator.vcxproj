@@ -347,6 +347,8 @@
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_menu.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_origin_point.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_pause.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Image\img_src_pin_header.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Image\img_src_rec.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_satellite.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_sd_card.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_start.c" />
@@ -355,6 +357,7 @@
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_system_info.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_time_info.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_trip.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usb.c" />
     <ClCompile Include="..\..\USER\App\Resource\ResourcePool.cpp" />
     <ClCompile Include="..\..\USER\App\Utils\DataCenter\Account.cpp" />
     <ClCompile Include="..\..\USER\App\Utils\DataCenter\DataCenter.cpp" />

@@ -54,10 +54,10 @@ void DialplateView::TopInfo_Create(lv_obj_t* par)
     lv_obj_remove_style_all(cont);
     lv_obj_set_size(cont, LV_HOR_RES, 142);
 
-    lv_obj_set_style_bg_opa(cont, LV_OPA_COVER, 0);
-    lv_obj_set_style_bg_color(cont, lv_color_hex(0x333333), 0);
+    lv_obj_set_style_bg_opa(cont, LV_OPA_TRANSP, 0);
+    //lv_obj_set_style_bg_color(cont, lv_color_hex(0x333333), 0);
 
-    lv_obj_set_style_radius(cont, 27, 0);
+    //lv_obj_set_style_radius(cont, 27, 0);
     lv_obj_set_y(cont, -36);
     ui.topInfo.cont = cont;
 

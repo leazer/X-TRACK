@@ -41,6 +41,8 @@ do{\
         IMPORT_IMG(menu);
         IMPORT_IMG(origin_point);
         IMPORT_IMG(pause);
+        IMPORT_IMG(pin_header);
+        IMPORT_IMG(rec);
         IMPORT_IMG(satellite);
         IMPORT_IMG(sd_card);
         IMPORT_IMG(start);
@@ -49,6 +51,7 @@ do{\
         IMPORT_IMG(system_info);
         IMPORT_IMG(time_info);
         IMPORT_IMG(trip);
+        IMPORT_IMG(usb);
     }
 
 } /* extern "C" */

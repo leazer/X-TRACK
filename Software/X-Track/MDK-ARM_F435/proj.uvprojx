@@ -1677,6 +1677,21 @@
               <FileType>1</FileType>
               <FilePath>..\USER\App\Resource\Image\img_src_sd_card.c</FilePath>
             </File>
+            <File>
+              <FileName>img_src_rec.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\App\Resource\Image\img_src_rec.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_src_usb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\App\Resource\Image\img_src_usb.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_src_pin_header.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\App\Resource\Image\img_src_pin_header.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

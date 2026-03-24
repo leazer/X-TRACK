@@ -3,7 +3,8 @@
 
 using namespace Page;
 
-#define COLOR_ORANGE    lv_color_hex(0xff931e)
+#define COLOR_ORANGE lv_color_hex(0xff931e)
+#define COLOR_BLUE   lv_color_hex(0x3FA9F5)
 
 void StartupView::Create(lv_obj_t* root)
 {
@@ -11,7 +12,7 @@ void StartupView::Create(lv_obj_t* root)
     lv_obj_remove_style_all(cont);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(cont, 110, 50);
-    lv_obj_set_style_border_color(cont, COLOR_ORANGE, 0);
+    lv_obj_set_style_border_color(cont, COLOR_BLUE, 0);
     lv_obj_set_style_border_side(cont, LV_BORDER_SIDE_BOTTOM, 0);
     lv_obj_set_style_border_width(cont, 3, 0);
     lv_obj_set_style_border_post(cont, true, 0);

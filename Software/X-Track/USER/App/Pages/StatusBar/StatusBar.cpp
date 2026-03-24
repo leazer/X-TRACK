@@ -25,11 +25,12 @@
 #include "Common/DataProc/DataProc.h"
 #include "Utils/lv_anim_label/lv_anim_label.h"
 #include "HAL/HAL.h"
+#include "lvgl/src/widgets/lv_bar.h"
 
 #define BATT_USAGE_HEIGHT (lv_obj_get_style_height(ui.battery.img, 0) - 6)
 #define BATT_USAGE_WIDTH (lv_obj_get_style_width(ui.battery.img, 0) - 4)
 
-#define STATUS_BAR_HEIGHT 25
+#define STATUS_BAR_HEIGHT 20
 
 #define CONFIG_WINDOW_WIDTH 200
 #define CONFIG_WINDOW_HEIGHT 240
@@ -64,15 +65,27 @@ struct
 {
     lv_obj_t *cont;
 
+    lv_obj_t *labelClock;
+    lv_obj_t *imgSD;
+    lv_obj_t* imgUSB;
+    lv_obj_t* imgSatellite;
+
     struct
     {
-        lv_obj_t *img;
+        lv_obj_t* img;
+        lv_obj_t* V;
+        lv_obj_t* R;
+        lv_obj_t* T;
+        lv_obj_t* G;
+        lv_obj_t* H;
+        lv_obj_t* L;
+    }PinHeader;
+
+    struct
+    {
+        lv_obj_t* img;
         lv_obj_t *label;
-    } satellite;
-
-    lv_obj_t *imgSD;
-
-    lv_obj_t *labelClock;
+    } Rec;
 
     lv_obj_t *labelRec;
 
@@ -82,6 +95,7 @@ struct
         lv_obj_t *objUsage;
         lv_obj_t *label;
     } battery;
+
     lv_obj_t *configWindow;
 
 } ui;
@@ -167,12 +181,6 @@ static void StatusBar_OnPowerSliderChange(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *slider = lv_event_get_target(e);
     int32_t value = lv_slider_get_value(slider);
-    lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
-
-    if (label != nullptr)
-    {
-        lv_label_set_text_fmt(label, "PowerDown %d%%", (int)value);
-    }
 
     // 拖动过程中检查是否达到90%，达到立即关机
     if (code == LV_EVENT_RELEASED && value >= 95)
@@ -289,7 +297,7 @@ static void StatusBar_ConfigWindowCreate(void)
 
     static lv_style_t style_slider_indicator;
     lv_style_init(&style_slider_indicator);
-    lv_style_set_bg_color(&style_slider_indicator, lv_color_hex(0x00FF00));
+    lv_style_set_bg_color(&style_slider_indicator, lv_color_hex(0x00a8ff));
     lv_style_set_bg_opa(&style_slider_indicator, LV_OPA_COVER);
     lv_style_set_radius(&style_slider_indicator, 5);
 
@@ -320,7 +328,7 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_add_style(slider_power, &style_slider_knob, LV_PART_KNOB);
     lv_obj_t *label_power = lv_label_create(slider_power);
     lv_obj_add_style(label_power, &style_label, 0);
-    lv_label_set_text(label_power, "PowerDown 0%");
+    lv_label_set_text(label_power, "PowerDown");
     lv_obj_center(label_power);
     lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_VALUE_CHANGED, label_power);
     lv_obj_add_event_cb(slider_power, StatusBar_OnPowerSliderChange, LV_EVENT_RELEASED, label_power);
@@ -357,26 +365,6 @@ static void StatusBar_ConfigWindowCreate(void)
     lv_obj_center(label_volume);
     lv_obj_add_event_cb(slider_volume, StatusBar_OnVolumeSliderChange, LV_EVENT_VALUE_CHANGED, label_volume);
 
-    // USB MSC 开关
-    lv_obj_t *cont_usb = lv_obj_create(ui.configWindow);
-    lv_obj_remove_style_all(cont_usb);
-    lv_obj_set_size(cont_usb, CONFIG_WINDOW_WIDTH - 20, 30);
-    lv_obj_align(cont_usb, LV_ALIGN_TOP_LEFT, 0, 175);
-    lv_obj_clear_flag(cont_usb, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_flex_flow(cont_usb, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(cont_usb, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-
-    lv_obj_t *label_usb = lv_label_create(cont_usb);
-    lv_obj_add_style(label_usb, &style_label, 0);
-    lv_label_set_text(label_usb, "USB MSC");
-
-    lv_obj_t* sw_usb = lv_switch_create(cont_usb);
-    lv_obj_align(sw_usb, LV_ALIGN_TOP_LEFT, 0, 175);
-    if (HAL::USB_GetMscEnable())
-    {
-        lv_obj_add_state(sw_usb, LV_STATE_CHECKED);
-    }
-    lv_obj_add_event_cb(sw_usb, StatusBar_OnUsbMscSwitchChange, LV_EVENT_VALUE_CHANGED, nullptr);
 }
 
 // 电池图标点击事件
@@ -414,11 +402,11 @@ static void StatusBar_OnConfigWindowBgClick(lv_event_t *e)
 static void StatusBar_Update(lv_timer_t *timer)
 {
     /* satellite */
-    HAL::GPS_Info_t gps;
-    if (actStatusBar->Pull("GPS", &gps, sizeof(gps)) == Account::RES_OK)
-    {
-        lv_label_set_text_fmt(ui.satellite.label, "%d", gps.satellites);
-    }
+    // HAL::GPS_Info_t gps;
+    // if (actStatusBar->Pull("GPS", &gps, sizeof(gps)) == Account::RES_OK)
+    // {
+    //     lv_label_set_text_fmt(ui.satellite.label, "%d", gps.satellites);
+    // }
 
     DataProc::Storage_Basic_Info_t sdInfo;
     if (actStatusBar->Pull("Storage", &sdInfo, sizeof(sdInfo)) == Account::RES_OK)
@@ -492,11 +480,11 @@ static void StatusBar_StyleInit(lv_obj_t *cont)
     lv_obj_set_style_transition(cont, &tran, LV_STATE_USER_1);
 }
 
-static lv_obj_t *StatusBar_SdCardImage_Create(lv_obj_t *par)
+static lv_obj_t *StatusBar_SdCardImage_Create(lv_obj_t *par, lv_obj_t *align, lv_coord_t x_ofs)
 {
     lv_obj_t *img = lv_img_create(par);
     lv_img_set_src(img, ResourcePool::GetImage("sd_card"));
-    lv_obj_align(img, LV_ALIGN_LEFT_MID, 85, -1);
+    lv_obj_align_to(img, align, LV_ALIGN_OUT_RIGHT_MID, x_ofs, -1);
 
     lv_obj_set_style_translate_y(img, -STATUS_BAR_HEIGHT, LV_STATE_DISABLED);
 
@@ -509,7 +497,59 @@ static lv_obj_t *StatusBar_SdCardImage_Create(lv_obj_t *par)
         &tran,
         prop,
         lv_anim_path_overshoot,
-        100,
+        300,
+        0,
+        nullptr);
+    lv_obj_set_style_transition(img, &tran, LV_STATE_DISABLED);
+    lv_obj_set_style_transition(img, &tran, LV_STATE_DEFAULT);
+
+    return img;
+}
+
+static lv_obj_t *StatusBar_USBImage_Create(lv_obj_t *par, lv_obj_t *align, lv_coord_t x_ofs)
+{
+    lv_obj_t *img = lv_img_create(par);
+    lv_img_set_src(img, ResourcePool::GetImage("usb"));
+    lv_obj_align_to(img, align, LV_ALIGN_OUT_RIGHT_MID, x_ofs, 0);
+
+    lv_obj_set_style_translate_y(img, -STATUS_BAR_HEIGHT, LV_STATE_DISABLED);
+
+    static lv_style_transition_dsc_t tran;
+    static const lv_style_prop_t prop[] =
+        {
+            LV_STYLE_TRANSLATE_Y,
+            LV_STYLE_PROP_INV};
+    lv_style_transition_dsc_init(
+        &tran,
+        prop,
+        lv_anim_path_overshoot,
+        300,
+        0,
+        nullptr);
+    lv_obj_set_style_transition(img, &tran, LV_STATE_DISABLED);
+    lv_obj_set_style_transition(img, &tran, LV_STATE_DEFAULT);
+
+    return img;
+}
+
+static lv_obj_t *StatusBar_SatelliteImage_Create(lv_obj_t *par, lv_obj_t *align, lv_coord_t x_ofs)
+{
+    lv_obj_t *img = lv_img_create(par);
+    lv_img_set_src(img, ResourcePool::GetImage("satellite"));
+    lv_obj_align_to(img, align, LV_ALIGN_OUT_RIGHT_MID, x_ofs, 0);
+
+    lv_obj_set_style_translate_y(img, -STATUS_BAR_HEIGHT, LV_STATE_DISABLED);
+
+    static lv_style_transition_dsc_t tran;
+    static const lv_style_prop_t prop[] =
+        {
+            LV_STYLE_TRANSLATE_Y,
+            LV_STYLE_PROP_INV};
+    lv_style_transition_dsc_init(
+        &tran,
+        prop,
+        lv_anim_path_overshoot,
+        300,
         0,
         nullptr);
     lv_obj_set_style_transition(img, &tran, LV_STATE_DISABLED);
@@ -554,24 +594,49 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
     lv_obj_t *label = lv_label_create(cont);
     lv_obj_add_style(label, &style_label, 0);
     lv_label_set_text(label, "00:00");
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 7, 0);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 4, 3);
     ui.labelClock = label;
-
+    /* sd card */
+    ui.imgSD = StatusBar_SdCardImage_Create(cont, ui.labelClock, 4);
+    /* usb */
+    ui.imgUSB = StatusBar_USBImage_Create(cont, ui.imgSD, 5);
     /* satellite */
+    ui.imgSatellite = StatusBar_SatelliteImage_Create(cont, ui.imgUSB, 3);
+    /* pin header */
     lv_obj_t *img = lv_img_create(cont);
-    lv_img_set_src(img, ResourcePool::GetImage("satellite"));
-    // lv_obj_align(img, LV_ALIGN_LEFT_MID, 14, 0);
-    lv_obj_align_to(img, label, LV_ALIGN_OUT_RIGHT_MID, 7, 0);
-    ui.satellite.img = img;
-
+    lv_img_set_src(img, ResourcePool::GetImage("pin_header"));
+    lv_obj_align_to(img, ui.imgSatellite, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+    ui.PinHeader.img = img;
     label = lv_label_create(cont);
     lv_obj_add_style(label, &style_label, 0);
-    lv_obj_align_to(label, ui.satellite.img, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
-    lv_label_set_text(label, "0");
-    ui.satellite.label = label;
-
-    /* sd card */
-    ui.imgSD = StatusBar_SdCardImage_Create(cont);
+    lv_label_set_text(label, "V");
+    lv_obj_align_to(label, ui.PinHeader.img, LV_ALIGN_LEFT_MID, 1, 1);
+    ui.PinHeader.V = label;
+    label = lv_label_create(cont);
+    lv_obj_add_style(label, &style_label, 0);
+    lv_label_set_text(label, "R");
+    lv_obj_align_to(label, ui.PinHeader.img, LV_ALIGN_LEFT_MID, 13, 1);
+    ui.PinHeader.R = label;
+    label = lv_label_create(cont);
+    lv_obj_add_style(label, &style_label, 0);
+    lv_label_set_text(label, "T");
+    lv_obj_align_to(label, ui.PinHeader.img, LV_ALIGN_LEFT_MID, 26, 1);
+    ui.PinHeader.T = label;
+    label = lv_label_create(cont);
+    lv_obj_add_style(label, &style_label, 0);
+    lv_label_set_text(label, "G");
+    lv_obj_align_to(label, ui.PinHeader.img, LV_ALIGN_LEFT_MID, 37, 1);
+    ui.PinHeader.G = label;
+    label = lv_label_create(cont);
+    lv_obj_add_style(label, &style_label, 0);
+    lv_label_set_text(label, "H");
+    lv_obj_align_to(label, ui.PinHeader.img, LV_ALIGN_LEFT_MID, 49, 1);
+    ui.PinHeader.H = label;
+    label = lv_label_create(cont);
+    lv_obj_add_style(label, &style_label, 0);
+    lv_label_set_text(label, "L");
+    lv_obj_align_to(label, ui.PinHeader.img, LV_ALIGN_LEFT_MID, 62, 1);
+    ui.PinHeader.L = label;
 
     /* recorder */
     ui.labelRec = StatusBar_RecAnimLabelCreate(cont);
@@ -588,7 +653,7 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
     lv_obj_t *contBatteryClickArea = lv_obj_create(cont);
     lv_obj_remove_style_all(contBatteryClickArea);
     lv_obj_set_size(contBatteryClickArea, 70, STATUS_BAR_HEIGHT);
-    lv_obj_align(contBatteryClickArea, LV_ALIGN_RIGHT_MID, -5, 0);
+    lv_obj_align(contBatteryClickArea, LV_ALIGN_TOP_RIGHT, -5, 3);
     lv_obj_set_style_bg_opa(contBatteryClickArea, LV_OPA_TRANSP, 0);
     lv_obj_add_event_cb(contBatteryClickArea, StatusBar_OnBatteryClick, LV_EVENT_CLICKED, nullptr);
     lv_obj_add_flag(contBatteryClickArea, LV_OBJ_FLAG_CLICKABLE);
