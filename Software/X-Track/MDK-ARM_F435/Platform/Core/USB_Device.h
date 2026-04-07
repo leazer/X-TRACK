@@ -23,6 +23,9 @@ void    USB_Device_SetMscEnable(uint8_t en);
 uint16_t USB_VCP_Read(uint8_t* buf, uint16_t buf_len);
 uint8_t  USB_VCP_Write(const uint8_t* buf, uint16_t len);
 
+/* USB 通讯状态（1=已建立，0=未建立） */
+uint8_t USB_Device_IsCommEstablished(void);
+
 #ifdef __cplusplus
 }
 #endif

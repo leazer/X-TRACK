@@ -248,6 +248,12 @@ uint8_t USB_VCP_Write(const uint8_t* buf, uint16_t len)
   return 0;
 }
 
+uint8_t USB_Device_IsCommEstablished(void)
+{
+  /* 进入 CONFIGURED 状态后，可视为 USB 枚举完成且通讯已建立 */
+  return (usbd_connect_state_get(&s_otg_core.dev) == USB_CONN_STATE_CONFIGURED) ? 1 : 0;
+}
+
 void usb_delay_ms(uint32_t ms)
 {
   /* user can define self delay function */

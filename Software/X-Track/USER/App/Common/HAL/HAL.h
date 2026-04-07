@@ -88,6 +88,7 @@ void SD_SetEventCallback(SD_CallbackFunction_t callback);
 void USB_Init();
 bool USB_GetMscEnable();
 void USB_SetMscEnable(bool en);
+bool USB_IsCommEstablished();
 uint16_t USB_VCP_Read(uint8_t* buf, uint16_t buf_len);
 uint8_t  USB_VCP_Write(const uint8_t* buf, uint16_t len);
 

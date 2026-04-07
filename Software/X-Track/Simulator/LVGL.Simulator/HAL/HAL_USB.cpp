@@ -1,4 +1,4 @@
-#include "HAL.h"
+﻿#include "HAL.h"
 
 namespace HAL
 {
@@ -12,6 +12,11 @@ bool USB_GetMscEnable()
 void USB_SetMscEnable(bool /*en*/)
 {
     // 模拟器中不真正切换 USB 模式，这里留空即可
+}
+
+bool USB_IsCommEstablished()
+{
+    return false;
 }
 
 // 下面两个接口目前仅在固件中使用，模拟器中保留空实现以满足链接
