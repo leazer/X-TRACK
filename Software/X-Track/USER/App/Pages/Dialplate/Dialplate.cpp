@@ -22,7 +22,8 @@ void Dialplate::onViewLoad()
     Model.Init();
     View.Create(_root);
 
-    AttachEvent(View.ui.btnCont.btnMap);
+    AttachEvent(View.ui.usbInfo.btnUsb);
+    AttachEvent(View.ui.btnCont.btnFile);
     AttachEvent(View.ui.btnCont.btnRec);
     AttachEvent(View.ui.btnCont.btnMenu);
 }
@@ -40,7 +41,8 @@ void Dialplate::onViewWillAppear()
 
     lv_group_set_wrap(group, false);
 
-    lv_group_add_obj(group, View.ui.btnCont.btnMap);
+    lv_group_add_obj(group, View.ui.usbInfo.btnUsb);
+    lv_group_add_obj(group, View.ui.btnCont.btnFile);
     lv_group_add_obj(group, View.ui.btnCont.btnRec);
     lv_group_add_obj(group, View.ui.btnCont.btnMenu);
 
@@ -50,7 +52,7 @@ void Dialplate::onViewWillAppear()
     }
     else
     {
-        lv_group_focus_obj(View.ui.btnCont.btnRec);
+        lv_group_focus_obj(View.ui.btnCont.btnFile);
     }
 
     Model.SetStatusBarStyle(DataProc::STATUS_BAR_STYLE_TRANSP);
@@ -72,7 +74,7 @@ void Dialplate::onViewWillDisappear()
     lastFocus = lv_group_get_focused(group);
     lv_group_remove_all_objs(group);
     lv_timer_del(timer);
-    //View.AppearAnimStart(true);
+    View.AppearAnimStart(true);
 }
 
 void Dialplate::onViewDidDisappear()
@@ -97,24 +99,25 @@ void Dialplate::AttachEvent(lv_obj_t* obj)
 
 void Dialplate::Update()
 {
-    char buf[16];
-    lv_label_set_text_fmt(View.ui.topInfo.labelSpeed, "%02d", (int)Model.GetSpeed());
+    static uint32_t testCanId = 0x03F20100;
+    static uint8_t testPayload[8] =
+    {
+        0x01,
+        0x03,
+        0x05,
+        0x07,
+        0x11,
+        0x13,
+        0x15,
+        0x17
+    };
 
-    lv_label_set_text_fmt(View.ui.bottomInfo.labelInfoGrp[0].lableValue, "%0.1f km/h", Model.GetAvgSpeed());
-    lv_label_set_text(
-        View.ui.bottomInfo.labelInfoGrp[1].lableValue,
-        DataProc::MakeTimeString(Model.sportStatusInfo.singleTime, buf, sizeof(buf))
-    );
-    lv_label_set_text_fmt(
-        View.ui.bottomInfo.labelInfoGrp[2].lableValue,
-        "%0.1f km",
-        Model.sportStatusInfo.singleDistance / 1000
-    );
-    lv_label_set_text_fmt(
-        View.ui.bottomInfo.labelInfoGrp[3].lableValue,
-        "%d k",
-        int(Model.sportStatusInfo.singleCalorie)
-    );
+    View.AddCanMessage(true, testCanId, testPayload, 8);
+    View.AddUartMessage(testPayload, 8);
+    View.AddUartMessage("Hello World!!");
+    testCanId++;
+    testPayload[0]++;
+    testPayload[1] += 2;
 }
 
 void Dialplate::onTimerUpdate(lv_timer_t* timer)
@@ -126,7 +129,7 @@ void Dialplate::onTimerUpdate(lv_timer_t* timer)
 
 void Dialplate::onBtnClicked(lv_obj_t* btn)
 {
-    if (btn == View.ui.btnCont.btnMap)
+    if (btn == View.ui.btnCont.btnFile)
     {
         _Manager->Push("Pages/LiveMap");
     }
@@ -205,6 +208,7 @@ void Dialplate::onRecord(bool longPress)
 
 void Dialplate::SetBtnRecImgSrc(const char* srcName)
 {
+    LV_UNUSED(srcName);
     lv_obj_set_style_bg_img_src(View.ui.btnCont.btnRec, ResourcePool::GetImage(srcName), 0);
 }
 

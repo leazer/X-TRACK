@@ -388,8 +388,6 @@ static void StatusBar_Update(lv_timer_t *timer)
         gps.isVaild ? lv_obj_clear_state(ui.imgSatellite, LV_STATE_DISABLED) : lv_obj_add_state(ui.imgSatellite, LV_STATE_DISABLED);
     }
 
-
-
     /* battery */
     HAL::Power_Info_t power;
     if (actStatusBar->Pull("Power", &power, sizeof(power)) == Account::RES_OK)
@@ -587,6 +585,7 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
 
     lv_obj_set_size(cont, LV_HOR_RES, STATUS_BAR_HEIGHT);
     lv_obj_set_y(cont, -STATUS_BAR_HEIGHT);
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     StatusBar_StyleInit(cont);
     ui.cont = cont;
 
@@ -608,6 +607,7 @@ lv_obj_t *Page::StatusBar_Create(lv_obj_t *par)
     lv_obj_add_state(ui.imgUSB, LV_STATE_DISABLED);
     /* satellite */
     ui.imgSatellite = StatusBar_SatelliteImage_Create(cont, ui.imgUSB, 3);
+
     /* pin header */
     lv_obj_t *img = lv_img_create(cont);
     lv_img_set_src(img, ResourcePool::GetImage("pin_header"));

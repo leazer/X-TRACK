@@ -1692,6 +1692,16 @@
               <FileType>1</FileType>
               <FilePath>..\USER\App\Resource\Image\img_src_pin_header.c</FilePath>
             </File>
+            <File>
+              <FileName>img_src_usb_arrow.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\App\Resource\Image\img_src_usb_arrow.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_src_usbconn.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\App\Resource\Image\img_src_usbconn.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -358,6 +358,8 @@
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_time_info.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_trip.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usb.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usbconn.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usb_arrow.c" />
     <ClCompile Include="..\..\USER\App\Resource\ResourcePool.cpp" />
     <ClCompile Include="..\..\USER\App\Utils\DataCenter\Account.cpp" />
     <ClCompile Include="..\..\USER\App\Utils\DataCenter\DataCenter.cpp" />

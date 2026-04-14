@@ -52,6 +52,8 @@ do{\
         IMPORT_IMG(time_info);
         IMPORT_IMG(trip);
         IMPORT_IMG(usb);
+        IMPORT_IMG(usbconn);
+        IMPORT_IMG(usb_arrow);
     }
 
 } /* extern "C" */

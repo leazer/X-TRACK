@@ -75,11 +75,11 @@ void DialplateModel::RecorderCommand(RecCmd_t cmd)
         break;
     case REC_PAUSE:
         statInfo.param.labelRec.show = true;
-        statInfo.param.labelRec.str = "PAUSE";
+        statInfo.param.labelRec.str = "PAU";
         break;  
     case REC_READY_STOP:
         statInfo.param.labelRec.show = true;
-        statInfo.param.labelRec.str = "STOP";
+        statInfo.param.labelRec.str = "STP";
         break;
     case REC_STOP:
         statInfo.param.labelRec.show = false;
