@@ -26,6 +26,7 @@ void LiveMapView::Create(lv_obj_t* root, uint32_t tileNum)
 
     Style_Create();
     Map_Create(root, tileNum);
+    MoveCtrl_Create(root);
     ZoomCtrl_Create(root);
     SportInfo_Create(root);
 }
@@ -91,12 +92,29 @@ void LiveMapView::Map_Create(lv_obj_t* par, uint32_t tileNum)
 
     Track_Create(cont);
 
-    lv_obj_t* img = lv_img_create(cont);
+    lv_obj_t* img = lv_img_create(par);
     lv_img_set_src(img, ResourcePool::GetImage("gps_arrow_dark"));
 
     lv_img_t* imgOri = (lv_img_t*)img;
     lv_obj_set_pos(img, -imgOri->w, -imgOri->h);
     ui.map.imgArrow = img;
+}
+
+void LiveMapView::MoveCtrl_Create(lv_obj_t* par)
+{
+    lv_obj_t* cont = lv_obj_create(par);
+    lv_obj_remove_style_all(cont);
+    lv_obj_center(cont);
+    lv_obj_set_size(cont, CONFIG_LIVE_MAP_VIEW_WIDTH, CONFIG_LIVE_MAP_VIEW_HEIGHT);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+#if CONFIG_LIVE_MAP_DEBUG_ENABLE
+    lv_obj_set_style_bg_opa(cont, LV_OPA_10, 0);
+    lv_obj_set_style_bg_color(cont, lv_palette_main(LV_PALETTE_GREY), 0);
+#else
+    lv_obj_set_style_bg_opa(cont, LV_OPA_TRANSP, 0);
+#endif
+    ui.move.cont = cont;
 }
 
 void LiveMapView::SetMapTile(uint32_t tileSize, uint32_t widthCnt)

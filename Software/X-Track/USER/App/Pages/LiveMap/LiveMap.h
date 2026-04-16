@@ -33,7 +33,9 @@ private:
         uint32_t lastContShowTime;
         lv_timer_t* timer;
         TileConv::Point_t lastTileContOriPoint;
+        TileConv::Point_t panOffset;
         bool isTrackAvtive;
+        bool isDragging;
     } priv;
 
     static uint16_t mapLevelCurrent;

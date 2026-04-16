@@ -43,7 +43,7 @@ void LiveMap::onViewLoad()
     View.SetMapTile(tileSize, rect.width / tileSize);
 
 #if CONFIG_LIVE_MAP_DEBUG_ENABLE
-    lv_obj_t* contView = lv_obj_create(root);
+    lv_obj_t* contView = lv_obj_create(_root);
     lv_obj_center(contView);
     lv_obj_set_size(contView, CONFIG_LIVE_MAP_VIEW_WIDTH, CONFIG_LIVE_MAP_VIEW_HEIGHT);
     lv_obj_set_style_border_color(contView, lv_palette_main(LV_PALETTE_RED), 0);
@@ -51,6 +51,7 @@ void LiveMap::onViewLoad()
 #endif
 
     AttachEvent(_root);
+    AttachEvent(View.ui.move.cont);
     AttachEvent(View.ui.zoom.slider);
     AttachEvent(View.ui.sportInfo.cont);
 
@@ -108,6 +109,9 @@ void LiveMap::onViewDidAppear()
 
     priv.lastTileContOriPoint.x = 0;
     priv.lastTileContOriPoint.y = 0;
+    priv.panOffset.x = 0;
+    priv.panOffset.y = 0;
+    priv.isDragging = false;
 
     priv.isTrackAvtive = Model.GetTrackFilterActive();
     if (!priv.isTrackAvtive)
@@ -201,12 +205,15 @@ void LiveMap::CheckPosition()
         Model.mapConv.SetLevel(mapLevelCurrent);
     }
 
-    int32_t mapX, mapY;
+    int32_t gpsMapX, gpsMapY;
     Model.mapConv.ConvertMapCoordinate(
         gpsInfo.longitude, gpsInfo.latitude,
-        &mapX, &mapY
+        &gpsMapX, &gpsMapY
     );
-    Model.tileConv.SetFocusPos(mapX, mapY);
+
+    int32_t focusMapX = gpsMapX + priv.panOffset.x;
+    int32_t focusMapY = gpsMapY + priv.panOffset.y;
+    Model.tileConv.SetFocusPos(focusMapX, focusMapY);
 
     if (GetIsMapTileContChanged())
     {
@@ -226,14 +233,14 @@ void LiveMap::CheckPosition()
             .y1 = rect.y + rect.height - 1
         };
 
-        onMapTileContRefresh(&area, mapX, mapY);
+        onMapTileContRefresh(&area, gpsMapX, gpsMapY);
     }
 
-    MapTileContUpdate(mapX, mapY, gpsInfo.course);
+    MapTileContUpdate(gpsMapX, gpsMapY, gpsInfo.course);
 
-    if (priv.isTrackAvtive)
+    if (priv.isTrackAvtive && !priv.isDragging)
     {
-        Model.pointFilter.PushPoint(mapX, mapY);
+        Model.pointFilter.PushPoint(gpsMapX, gpsMapY);
     }
 }
 
@@ -260,13 +267,6 @@ void LiveMap::MapTileContUpdate(int32_t mapX, int32_t mapY, float course)
     TileConv::Point_t curPoint = { mapX, mapY };
     Model.tileConv.GetOffset(&offset, &curPoint);
 
-    /* arrow */
-    lv_obj_t* img = View.ui.map.imgArrow;
-    Model.tileConv.GetFocusOffset(&offset);
-    lv_coord_t x = offset.x - lv_obj_get_width(img) / 2;
-    lv_coord_t y = offset.y - lv_obj_get_height(img) / 2;
-    View.SetImgArrowStatus(x, y, course);
-
     /* active line */
     if (priv.isTrackAvtive)
     {
@@ -278,7 +278,16 @@ void LiveMap::MapTileContUpdate(int32_t mapX, int32_t mapY, float course)
 
     lv_coord_t baseX = (LV_HOR_RES - CONFIG_LIVE_MAP_VIEW_WIDTH) / 2;
     lv_coord_t baseY = (LV_VER_RES - CONFIG_LIVE_MAP_VIEW_HEIGHT) / 2;
-    lv_obj_set_pos(View.ui.map.cont, baseX - offset.x, baseY - offset.y);
+    lv_coord_t mapContX = baseX - offset.x;
+    lv_coord_t mapContY = baseY - offset.y;
+    lv_obj_set_pos(View.ui.map.cont, mapContX, mapContY);
+
+    /* arrow */
+    lv_obj_t* img = View.ui.map.imgArrow;
+    Model.tileConv.GetOffset(&offset, &curPoint);
+    lv_coord_t x = mapContX + offset.x - lv_obj_get_width(img) / 2;
+    lv_coord_t y = mapContY + offset.y - lv_obj_get_height(img) / 2;
+    View.SetImgArrowStatus(x, y, course);
 }
 
 void LiveMap::MapTileContReload()
@@ -377,6 +386,31 @@ void LiveMap::onEvent(lv_event_t* event)
     if (code == LV_EVENT_LEAVE)
     {
         instance->_Manager->Pop();
+        return;
+    }
+
+    if (obj == instance->View.ui.move.cont)
+    {
+        if (code == LV_EVENT_PRESSED)
+        {
+            instance->priv.isDragging = true;
+            lv_obj_clear_state(instance->View.ui.zoom.cont, LV_STATE_USER_1);
+            instance->priv.lastContShowTime = lv_tick_get();
+        }
+        else if (code == LV_EVENT_PRESSING)
+        {
+            lv_point_t vect;
+            lv_indev_get_vect(lv_indev_get_act(), &vect);
+            instance->priv.panOffset.x -= vect.x;
+            instance->priv.panOffset.y -= vect.y;
+            instance->UpdateDelay(0);
+            instance->CheckPosition();
+        }
+        else if (code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST)
+        {
+            instance->priv.isDragging = false;
+            instance->priv.lastContShowTime = lv_tick_get();
+        }
         return;
     }
 

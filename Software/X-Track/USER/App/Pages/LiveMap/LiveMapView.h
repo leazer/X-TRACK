@@ -24,8 +24,13 @@ public:
             lv_obj_t* cont;
             lv_obj_t* imgArrow;
             lv_obj_t** imgTiles;
-            uint32_t tileNum;            
+            uint32_t tileNum;
         } map;
+
+        struct
+        {
+            lv_obj_t* cont;
+        } move;
 
         struct
         {
@@ -41,11 +46,6 @@ public:
             lv_obj_t* labelInfo;
             lv_obj_t* slider;
         } zoom;
-
-        struct
-        {
-            lv_obj_t* cont;
-        } move;
 
         struct
         {
@@ -73,6 +73,7 @@ public:
 private:
     void Style_Create();
     void Map_Create(lv_obj_t* par, uint32_t tileNum);
+    void MoveCtrl_Create(lv_obj_t* par);
     void ZoomCtrl_Create(lv_obj_t* par);
     void SportInfo_Create(lv_obj_t* par);
     lv_obj_t* ImgLabel_Create(lv_obj_t* par, const void* img_src, lv_coord_t x_ofs, lv_coord_t y_ofs);
