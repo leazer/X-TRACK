@@ -190,19 +190,6 @@ static void StatusBar_OnVolumeSliderChange(lv_event_t *e)
     // HAL::Audio_SetVolume(value);
 }
 
-// 配置窗口开关事件处理 - USB MSC
-static void StatusBar_OnUsbMscSwitchChange(lv_event_t *e)
-{
-    lv_obj_t *sw = lv_event_get_target(e);
-    bool en = lv_obj_has_state(sw, LV_STATE_CHECKED);
-
-    DataProc::SysConfig_Info_t info;
-    DATA_PROC_INIT_STRUCT(info);
-    info.cmd = DataProc::SYSCONFIG_CMD_SET_USB_MSC_ENABLE;
-    info.usbMscEnable = en;
-    DataProc::Center()->AccountMain.Notify("SysConfig", &info, sizeof(info));
-}
-
 // 关闭配置窗口
 static void StatusBar_ConfigWindowClose()
 {

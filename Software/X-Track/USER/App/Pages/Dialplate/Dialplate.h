@@ -35,6 +35,7 @@ private:
 private:
     void Update();
     void AttachEvent(lv_obj_t* obj);
+    void SyncUsbMscState();
     static void onTimerUpdate(lv_timer_t* timer);
     static void onEvent(lv_event_t* event);
     void onBtnClicked(lv_obj_t* btn);

@@ -333,11 +333,13 @@
     <ClCompile Include="..\..\USER\App\Resource\Font\font_bahnschrift_17.c" />
     <ClCompile Include="..\..\USER\App\Resource\Font\font_bahnschrift_32.c" />
     <ClCompile Include="..\..\USER\App\Resource\Font\font_bahnschrift_65.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Font\font_bahnschrift_8.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_alarm.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_battery.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_battery_info.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_bicycle.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_compass.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Image\img_src_file_btn.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_gps_arrow_dark.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_gps_arrow_default.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_gps_arrow_light.c" />
@@ -360,6 +362,7 @@
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usb.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usbconn.c" />
     <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usb_arrow.c" />
+    <ClCompile Include="..\..\USER\App\Resource\Image\img_src_usb_btn.c" />
     <ClCompile Include="..\..\USER\App\Resource\ResourcePool.cpp" />
     <ClCompile Include="..\..\USER\App\Utils\DataCenter\Account.cpp" />
     <ClCompile Include="..\..\USER\App\Utils\DataCenter\DataCenter.cpp" />

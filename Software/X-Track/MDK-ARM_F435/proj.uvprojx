@@ -1702,6 +1702,16 @@
               <FileType>1</FileType>
               <FilePath>..\USER\App\Resource\Image\img_src_usbconn.c</FilePath>
             </File>
+            <File>
+              <FileName>img_src_file_btn.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\App\Resource\Image\img_src_file_btn.c</FilePath>
+            </File>
+            <File>
+              <FileName>img_src_usb_btn.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\App\Resource\Image\img_src_usb_btn.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

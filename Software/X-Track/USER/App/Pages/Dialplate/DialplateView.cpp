@@ -7,6 +7,8 @@
 #define INFO_LINE_COUNT 4
 #define INFO_LINE_HEIGHT 15
 #define CAN_INFO_RESUME_DELAY 3000
+#define INFO_FOCUS_BORDER_WIDTH 2
+#define INFO_FOCUS_BORDER_COLOR 0x29ABE2
 #define UART_INFO_TOP_OFFSET 116
 
 using namespace Page;
@@ -17,6 +19,7 @@ void DialplateView::Create(lv_obj_t* root)
     UartInfo_Create(root);
     UsbInfo_Create(root);
     BtnCont_Create(root);
+    SetUsbMscEnabled(false);
 
     ui.anim_timeline = lv_anim_timeline_create();
 
@@ -59,6 +62,18 @@ void DialplateView::Delete()
     }
 }
 
+void DialplateView::SetUsbMscEnabled(bool enabled)
+{
+    if (ui.usbInfo.labelMscEn)
+    {
+        lv_obj_set_style_text_color(
+            ui.usbInfo.labelMscEn,
+            lv_color_hex(enabled ? 0xB3B3B3 : 0x4D4D4D),
+            0
+        );
+    }
+}
+
 void DialplateView::CanInfo_Create(lv_obj_t* par)
 {
     lv_obj_t* cont = lv_obj_create(par);
@@ -73,6 +88,12 @@ void DialplateView::CanInfo_Create(lv_obj_t* par)
     lv_obj_set_style_radius(cont, 5, 0);
     lv_obj_set_style_clip_corner(cont, true, 0);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICK_FOCUSABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_set_style_border_width(cont, 0, 0);
+    lv_obj_set_style_border_width(cont, INFO_FOCUS_BORDER_WIDTH, LV_STATE_FOCUSED);
+    lv_obj_set_style_border_color(cont, lv_color_hex(INFO_FOCUS_BORDER_COLOR), LV_STATE_FOCUSED);
     ui.canInfo.cont = cont;
 
     cont = lv_obj_create(ui.canInfo.cont);
@@ -82,6 +103,7 @@ void DialplateView::CanInfo_Create(lv_obj_t* par)
     lv_obj_set_style_bg_opa(cont, LV_OPA_COVER, 0);
     lv_obj_set_style_bg_color(cont, lv_color_hex(0x333333), 0);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_EVENT_BUBBLE);
     ui.canInfo.header = cont;
 
     lv_obj_t* label = lv_label_create(ui.canInfo.header);
@@ -124,6 +146,7 @@ void DialplateView::CanInfo_Create(lv_obj_t* par)
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLL_MOMENTUM);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_event_cb(cont, onCanInfoEvent, LV_EVENT_ALL, this);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -148,6 +171,12 @@ void DialplateView::UartInfo_Create(lv_obj_t* par)
     lv_obj_set_style_radius(cont, 5, 0);
     lv_obj_set_style_clip_corner(cont, true, 0);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_CLICK_FOCUSABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_set_style_border_width(cont, 0, 0);
+    lv_obj_set_style_border_width(cont, INFO_FOCUS_BORDER_WIDTH, LV_STATE_FOCUSED);
+    lv_obj_set_style_border_color(cont, lv_color_hex(INFO_FOCUS_BORDER_COLOR), LV_STATE_FOCUSED);
     ui.uartInfo.cont = cont;
 
     cont = lv_obj_create(ui.uartInfo.cont);
@@ -157,6 +186,7 @@ void DialplateView::UartInfo_Create(lv_obj_t* par)
     lv_obj_set_style_bg_opa(cont, LV_OPA_COVER, 0);
     lv_obj_set_style_bg_color(cont, lv_color_hex(0x333333), 0);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_EVENT_BUBBLE);
     ui.uartInfo.header = cont;
 
     lv_obj_t* label = lv_label_create(ui.uartInfo.header);
@@ -213,6 +243,7 @@ void DialplateView::UartInfo_Create(lv_obj_t* par)
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(cont, LV_OBJ_FLAG_SCROLL_MOMENTUM);
+    lv_obj_add_flag(cont, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_event_cb(cont, onUartInfoEvent, LV_EVENT_ALL, this);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -276,83 +307,7 @@ void DialplateView::UsbInfo_Create(lv_obj_t* par)
     lv_obj_align(img, LV_ALIGN_LEFT_MID, 10, -2);
     ui.usbInfo.picUsbConn = img;
 
-    img = lv_img_create(ui.usbInfo.subCont);
-    lv_img_set_src(img, ResourcePool::GetImage("usb_arrow"));
-    lv_obj_align(img, LV_ALIGN_LEFT_MID, 54, -2);
-    ui.usbInfo.picUsbArrow = img;
-
-    label = lv_label_create(ui.usbInfo.cont);
-    lv_obj_set_style_text_font(label, ResourcePool::GetFont("bahnschrift_13"), 0);
-    lv_obj_set_style_text_color(label, lv_color_hex(0xD0D0D0), 0);
-    lv_label_set_text_static(label, "CAN|UART");
-    lv_obj_align_to(label, ui.usbInfo.picUsbArrow, LV_ALIGN_LEFT_MID, 50, 0);
-    ui.usbInfo.labelUsbConn = label;
-
-    ui.usbInfo.btnUsb = Btn_Create(ui.usbInfo.cont, ResourcePool::GetImage("menu"), 78);
-}
-
-void DialplateView::TopInfo_Create(lv_obj_t* par)
-{
-    // lv_obj_t* cont = lv_obj_create(par);
-    // lv_obj_remove_style_all(cont);
-    // lv_obj_set_size(cont, LV_HOR_RES, 142);
-    // lv_obj_set_style_bg_opa(cont, LV_OPA_TRANSP, 0);
-    // lv_obj_set_y(cont, -36);
-    // ui.topInfo.cont = cont;
-    // lv_obj_t* label = lv_label_create(cont);
-    // lv_obj_set_style_text_font(label, ResourcePool::GetFont("bahnschrift_65"), 0);
-    // lv_obj_set_style_text_color(label, lv_color_white(), 0);
-    // lv_label_set_text(label, "00");
-    // lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 63);
-    // ui.topInfo.labelSpeed = label;
-    // label = lv_label_create(cont);
-    // lv_obj_set_style_text_font(label, ResourcePool::GetFont("bahnschrift_17"), 0);
-    // lv_obj_set_style_text_color(label, lv_color_white(), 0);
-    // lv_label_set_text(label, "km/h");
-    // lv_obj_align_to(label, ui.topInfo.labelSpeed, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
-    // ui.topInfo.labelUint = label;
-    LV_UNUSED(par);
-}
-
-void DialplateView::BottomInfo_Create(lv_obj_t* par)
-{
-    // lv_obj_t* cont = lv_obj_create(par);
-    // lv_obj_remove_style_all(cont);
-    // lv_obj_set_style_bg_opa(cont, LV_OPA_TRANSP, 0);
-    // lv_obj_set_style_bg_color(cont, lv_color_black(), 0);
-    // lv_obj_set_size(cont, LV_HOR_RES, 90);
-    // lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 136);
-    // lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_ROW_WRAP);
-    // lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    // ui.bottomInfo.cont = cont;
-    // const char* unitText[4] = { "AVG", "Time", "Trip", "Calorie" };
-    // for (int i = 0; i < ARRAY_SIZE(ui.bottomInfo.labelInfoGrp); i++)
-    // {
-    //     SubInfoGrp_Create(cont, &(ui.bottomInfo.labelInfoGrp[i]), unitText[i]);
-    // }
-    LV_UNUSED(par);
-}
-
-void DialplateView::SubInfoGrp_Create(lv_obj_t* par, SubInfo_t* info, const char* unitText)
-{
-    // lv_obj_t* cont = lv_obj_create(par);
-    // lv_obj_remove_style_all(cont);
-    // lv_obj_set_size(cont, 93, 39);
-    // lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
-    // lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    // lv_obj_t* label = lv_label_create(cont);
-    // lv_obj_set_style_text_font(label, ResourcePool::GetFont("bahnschrift_17"), 0);
-    // lv_obj_set_style_text_color(label, lv_color_white(), 0);
-    // info->lableValue = label;
-    // label = lv_label_create(cont);
-    // lv_obj_set_style_text_font(label, ResourcePool::GetFont("bahnschrift_13"), 0);
-    // lv_obj_set_style_text_color(label, lv_color_hex(0xb3b3b3), 0);
-    // lv_label_set_text(label, unitText);
-    // info->lableUnit = label;
-    // info->cont = cont;
-    LV_UNUSED(par);
-    LV_UNUSED(info);
-    LV_UNUSED(unitText);
+    ui.usbInfo.btnUsb = Btn_Create(ui.usbInfo.cont, ResourcePool::GetImage("usb_btn"), 78);
 }
 
 void DialplateView::BtnCont_Create(lv_obj_t* par)
@@ -362,7 +317,7 @@ void DialplateView::BtnCont_Create(lv_obj_t* par)
     lv_obj_set_size(cont, LV_HOR_RES, 40);
     lv_obj_align_to(cont, ui.usbInfo.cont, LV_ALIGN_OUT_BOTTOM_MID, 0, 6);
     ui.btnCont.cont = cont;
-    ui.btnCont.btnFile = Btn_Create(cont, ResourcePool::GetImage("locate"), -78);
+    ui.btnCont.btnFile = Btn_Create(cont, ResourcePool::GetImage("file_btn"), -78);
     ui.btnCont.btnRec = Btn_Create(cont, ResourcePool::GetImage("start"), 0);
     ui.btnCont.btnMenu = Btn_Create(cont, ResourcePool::GetImage("menu"), 78);
     LV_UNUSED(par);

@@ -1,4 +1,5 @@
 #include "DialplateModel.h"
+#include "HAL/HAL.h"
 
 using namespace Page;
 
@@ -10,6 +11,7 @@ void DialplateModel::Init()
     account->Subscribe("StatusBar");
     account->Subscribe("GPS");
     account->Subscribe("MusicPlayer");
+    account->Subscribe("SysConfig");
     account->SetEventCallback(onEvent);
 }
 
@@ -30,6 +32,25 @@ bool DialplateModel::GetGPSReady()
         return false;
     }
     return (gps.satellites > 0);
+}
+
+bool DialplateModel::GetUsbMscEnabled()
+{
+    DataProc::SysConfig_Info_t info;
+    DATA_PROC_INIT_STRUCT(info);
+
+    return account->Pull("SysConfig", &info, sizeof(info)) == Account::RES_OK
+        ? info.usbMscEnable
+        : HAL::USB_GetMscEnable();
+}
+
+void DialplateModel::SetUsbMscEnabled(bool enabled)
+{
+    DataProc::SysConfig_Info_t info;
+    DATA_PROC_INIT_STRUCT(info);
+    info.cmd = DataProc::SYSCONFIG_CMD_SET_USB_MSC_ENABLE;
+    info.usbMscEnable = enabled;
+    account->Notify("SysConfig", &info, sizeof(info));
 }
 
 int DialplateModel::onEvent(Account* account, Account::EventParam_t* param)

@@ -21,7 +21,10 @@ void Dialplate::onViewLoad()
 {
     Model.Init();
     View.Create(_root);
+    SyncUsbMscState();
 
+    AttachEvent(View.ui.canInfo.cont);
+    AttachEvent(View.ui.uartInfo.cont);
     AttachEvent(View.ui.usbInfo.btnUsb);
     AttachEvent(View.ui.btnCont.btnFile);
     AttachEvent(View.ui.btnCont.btnRec);
@@ -39,8 +42,17 @@ void Dialplate::onViewWillAppear()
     lv_group_t* group = lv_group_get_default();
     LV_ASSERT_NULL(group);
 
-    lv_group_set_wrap(group, false);
+    lv_obj_clear_state(View.ui.canInfo.cont, LV_STATE_FOCUSED);
+    lv_obj_clear_state(View.ui.uartInfo.cont, LV_STATE_FOCUSED);
+    lv_obj_clear_state(View.ui.usbInfo.btnUsb, LV_STATE_FOCUSED);
+    lv_obj_clear_state(View.ui.btnCont.btnFile, LV_STATE_FOCUSED);
+    lv_obj_clear_state(View.ui.btnCont.btnRec, LV_STATE_FOCUSED);
+    lv_obj_clear_state(View.ui.btnCont.btnMenu, LV_STATE_FOCUSED);
 
+    lv_group_set_wrap(group, true);
+
+    lv_group_add_obj(group, View.ui.canInfo.cont);
+    lv_group_add_obj(group, View.ui.uartInfo.cont);
     lv_group_add_obj(group, View.ui.usbInfo.btnUsb);
     lv_group_add_obj(group, View.ui.btnCont.btnFile);
     lv_group_add_obj(group, View.ui.btnCont.btnRec);
@@ -52,7 +64,7 @@ void Dialplate::onViewWillAppear()
     }
     else
     {
-        lv_group_focus_obj(View.ui.btnCont.btnFile);
+        lv_group_focus_obj(View.ui.btnCont.btnRec);
     }
 
     Model.SetStatusBarStyle(DataProc::STATUS_BAR_STYLE_TRANSP);
@@ -64,7 +76,7 @@ void Dialplate::onViewWillAppear()
 
 void Dialplate::onViewDidAppear()
 {
-    timer = lv_timer_create(onTimerUpdate, 1000, this);
+    timer = lv_timer_create(onTimerUpdate, 500, this);
 }
 
 void Dialplate::onViewWillDisappear()
@@ -97,6 +109,11 @@ void Dialplate::AttachEvent(lv_obj_t* obj)
     lv_obj_add_event_cb(obj, onEvent, LV_EVENT_ALL, this);
 }
 
+void Dialplate::SyncUsbMscState()
+{
+    View.SetUsbMscEnabled(Model.GetUsbMscEnabled());
+}
+
 void Dialplate::Update()
 {
     static uint32_t testCanId = 0x03F20100;
@@ -114,7 +131,6 @@ void Dialplate::Update()
 
     View.AddCanMessage(true, testCanId, testPayload, 8);
     View.AddUartMessage(testPayload, 8);
-    View.AddUartMessage("Hello World!!");
     testCanId++;
     testPayload[0]++;
     testPayload[1] += 2;
@@ -129,9 +145,15 @@ void Dialplate::onTimerUpdate(lv_timer_t* timer)
 
 void Dialplate::onBtnClicked(lv_obj_t* btn)
 {
-    if (btn == View.ui.btnCont.btnFile)
+    if (btn == View.ui.canInfo.cont || btn == View.ui.uartInfo.cont || btn == View.ui.btnCont.btnFile)
     {
         _Manager->Push("Pages/LiveMap");
+    }
+    else if (btn == View.ui.usbInfo.btnUsb)
+    {
+        bool enabled = !Model.GetUsbMscEnabled();
+        Model.SetUsbMscEnabled(enabled);
+        View.SetUsbMscEnabled(enabled);
     }
     else if (btn == View.ui.btnCont.btnMenu)
     {

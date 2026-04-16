@@ -54,6 +54,8 @@ do{\
         IMPORT_IMG(usb);
         IMPORT_IMG(usbconn);
         IMPORT_IMG(usb_arrow);
+        IMPORT_IMG(file_btn);
+        IMPORT_IMG(usb_btn);
     }
 
 } /* extern "C" */

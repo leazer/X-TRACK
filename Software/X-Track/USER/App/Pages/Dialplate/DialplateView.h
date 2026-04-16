@@ -51,23 +51,8 @@ public:
             lv_obj_t* labelMscEn;
             lv_obj_t* subCont;
             lv_obj_t* picUsbConn;
-            lv_obj_t* picUsbArrow;
-            lv_obj_t* labelUsbConn;
             lv_obj_t* btnUsb;
         } usbInfo;
-
-        struct
-        {
-            lv_obj_t* cont;
-            lv_obj_t* labelSpeed;
-            lv_obj_t* labelUint;
-        } topInfo;
-
-        struct
-        {
-            lv_obj_t* cont;
-            SubInfo_t labelInfoGrp[4];
-        } bottomInfo;
 
         struct
         {
@@ -90,6 +75,7 @@ public:
     void ClearUartMessages();
     void AddUartMessage(const uint8_t* payload, uint32_t length);
     void AddUartMessage(const char* text);
+    void SetUsbMscEnabled(bool enabled);
 
 private:
     static void onCanInfoEvent(lv_event_t* event);
@@ -111,12 +97,9 @@ private:
     void CanInfo_Create(lv_obj_t* par);
     void UartInfo_Create(lv_obj_t* par);
     void UsbInfo_Create(lv_obj_t* par);
-
-    void TopInfo_Create(lv_obj_t* par);
-    void BottomInfo_Create(lv_obj_t* par);
-    void SubInfoGrp_Create(lv_obj_t* par, SubInfo_t* info, const char* unitText);
     void BtnCont_Create(lv_obj_t* par);
     lv_obj_t* Btn_Create(lv_obj_t* par, const void* img_src, lv_coord_t x_ofs);
+    void SetupInfoContainer(lv_obj_t* obj);
 
 private:
     lv_timer_t* canAutoScrollTimer = nullptr;
