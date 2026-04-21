@@ -30,6 +30,7 @@ typedef struct
 static HAL::GPS_Info_t gpsInfo;
 static GPX_Parser gpxParser;
 static FileInfo_t fileInfo;
+static bool isEnable = false;
 
 static double distanceBetween(double lat1, double long1, double lat2, double long2)
 {
@@ -123,11 +124,22 @@ bool HAL::GPS_GetInfo(GPS_Info_t* info)
     return true;
 }
 
+void HAL::GPS_SetEnable(bool en)
+{
+    isEnable = en;
+}
+
+bool HAL::GPS_GetIsEnable()
+{
+    return isEnable;
+}
+
 void HAL::GPS_Init()
 {
     gpsInfo.longitude = CONFIG_GPS_LONGITUDE_DEFAULT;
     gpsInfo.latitude = CONFIG_GPS_LATITUDE_DEFAULT;
     gpsInfo.isVaild = Parser_Init(&gpxParser, &fileInfo);
+    isEnable = true;
 
     if (gpsInfo.isVaild)
     {

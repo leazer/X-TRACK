@@ -15,7 +15,7 @@ void HAL::GPS_Init()
     Serial.print("GPS: TinyGPS++ library v. ");
     Serial.print(TinyGPSPlus::libraryVersion());
     Serial.println(" by Mikal Hart");
-    HAL::GPS_SetEnable(true);
+    // HAL::GPS_SetEnable(true);
 }
 
 void HAL::GPS_SetEnable(bool en)

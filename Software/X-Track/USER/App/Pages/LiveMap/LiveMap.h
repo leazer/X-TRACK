@@ -31,11 +31,13 @@ private:
     {
         uint32_t lastMapUpdateTime;
         uint32_t lastContShowTime;
+        uint32_t lastManualMoveTime;
         lv_timer_t* timer;
         TileConv::Point_t lastTileContOriPoint;
         TileConv::Point_t panOffset;
         bool isTrackAvtive;
         bool isDragging;
+        bool isAutoRecentering;
     } priv;
 
     static uint16_t mapLevelCurrent;
@@ -47,6 +49,10 @@ private:
     void Update();
     void UpdateDelay(uint32_t ms);
     void CheckPosition();
+    void StartAutoRecenterAnim();
+    void StopAutoRecenterAnim();
+    static void onPanOffsetXAnim(void* var, int32_t v);
+    static void onPanOffsetYAnim(void* var, int32_t v);
 
     /* SportInfo */
     void SportInfoUpdate();
