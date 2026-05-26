@@ -86,7 +86,7 @@ void MainMenu::onEvent(lv_event_t* event)
         if (obj != instance->_root)
         {
             /* 当前两个菜单项都跳转到 SystemInfos 页面 */
-            instance->_Manager->Push("Pages/SystemInfos");
+            // instance->_Manager->Push("Pages/SystemInfos");
         }
     }
 

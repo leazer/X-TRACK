@@ -2,7 +2,7 @@
 
 using namespace Page;
 
-#define ITEM_HEIGHT_MIN   100
+#define ITEM_HEIGHT_MIN   50
 #define ITEM_PAD          ((LV_VER_RES - ITEM_HEIGHT_MIN) / 2)
 
 void MainMenuView::Create(lv_obj_t* root)

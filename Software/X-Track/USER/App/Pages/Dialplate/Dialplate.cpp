@@ -157,8 +157,8 @@ void Dialplate::onBtnClicked(lv_obj_t* btn)
     }
     else if (btn == View.ui.btnCont.btnMenu)
     {
-        // _Manager->Push("Pages/SystemInfos");
-        _Manager->Push("Pages/MainMenu");
+        _Manager->Push("Pages/SystemInfos");
+        // _Manager->Push("Pages/MainMenu");
     }
 }
 
