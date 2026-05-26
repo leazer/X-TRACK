@@ -38,13 +38,13 @@
 #define NULL_PIN                    PD0
 
 /* Screen */
-#define CONFIG_SCREEN_CS_PIN        PB0
-#define CONFIG_SCREEN_DC_PIN        PA4
-#define CONFIG_SCREEN_RST_PIN       PA6
-#define CONFIG_SCREEN_SCK_PIN       PA5
-#define CONFIG_SCREEN_MOSI_PIN      PA7
-#define CONFIG_SCREEN_BLK_PIN       PB1  // TIM3
-#define CONFIG_SCREEN_SPI           SPI
+#define CONFIG_SCREEN_CS_PIN        PA8
+#define CONFIG_SCREEN_DC_PIN        PB12
+#define CONFIG_SCREEN_RST_PIN       PB14
+#define CONFIG_SCREEN_SCK_PIN       PB13
+#define CONFIG_SCREEN_MOSI_PIN      PB15
+#define CONFIG_SCREEN_BLK_PIN       PB2  // TIM2
+#define CONFIG_SCREEN_SPI           SPI_2
 
 #define CONFIG_SCREEN_HOR_RES       240
 #define CONFIG_SCREEN_VER_RES       320
@@ -54,10 +54,10 @@
 #define CONFIG_BAT_CHG_DET_PIN      PC13
 
 /* Buzzer */
-#define CONFIG_BUZZ_PIN             PB2  // TIM2
+#define CONFIG_BUZZ_PIN             PB1  // TIM2
 
 /* LED */
-#define CONFIG_LED_PIN              PA1
+#define CONFIG_LED_PIN              PB0
 
 /* GPS */
 #define CONFIG_GPS_SERIAL           Serial3
@@ -92,12 +92,22 @@
 #define CONFIG_DEBUG_TX_PIN         PA9
 
 /* SD CARD */
-#define CONFIG_SD_SPI               SPI_2
-#define CONFIG_SD_CD_PIN            PB12
-#define CONFIG_SD_MOSI_PIN          PB15
-#define CONFIG_SD_MISO_PIN          PB14
-#define CONFIG_SD_SCK_PIN           PB13
-#define CONFIG_SD_CS_PIN            PA8
+#define CONFIG_SD_SPI               SPI
+#define CONFIG_SD_CD_PIN            PA1
+#define CONFIG_SD_MOSI_PIN          PA5
+#define CONFIG_SD_MISO_PIN          PA5
+#define CONFIG_SD_SCK_PIN           PA2
+#define CONFIG_SD_CS_PIN            PA3
+
+/* SD CARD SDIO */
+// #define CONFIG_SD_CD_PIN            PA1
+// #define CONFIG_SD_SCK_PIN           PA2
+// #define CONFIG_SD_CMD_PIN           PA3
+// #define CONFIG_SD_D0_PIN            PA4
+// #define CONFIG_SD_D1_PIN            PA5
+// #define CONFIG_SD_D2_PIN            PA6
+// #define CONFIG_SD_D3_PIN            PA7
+
 
 /* HAL Interrupt Update Timer */
 #define CONFIG_HAL_UPDATE_TIM       TIM4
