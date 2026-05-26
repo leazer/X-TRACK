@@ -112,7 +112,7 @@ static void Display_SPI_DMA_Init()
     dma_init_struct.memory_base_addr = (uint32_t)NULL;
     dma_init_struct.memory_data_width = DMA_MEMORY_DATA_WIDTH_BYTE;
     dma_init_struct.memory_inc_enable = TRUE;
-    dma_init_struct.peripheral_base_addr = (uint32_t)&SPI1->dt;
+    dma_init_struct.peripheral_base_addr = (uint32_t)&SPI2->dt;
     dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
     dma_init_struct.peripheral_inc_enable = FALSE;
     dma_init_struct.priority = DMA_PRIORITY_MEDIUM;
@@ -121,9 +121,9 @@ static void Display_SPI_DMA_Init()
     dma_init(DISP_DMA_CHANNEL, &dma_init_struct);
     
     dmamux_enable(DMA1, TRUE);
-    dmamux_init(DMA1MUX_CHANNEL3, DMAMUX_DMAREQ_ID_SPI1_TX);
+    dmamux_init(DMA1MUX_CHANNEL3, DMAMUX_DMAREQ_ID_SPI2_TX);
 
-    spi_i2s_dma_transmitter_enable(SPI1, TRUE);
+    spi_i2s_dma_transmitter_enable(SPI2, TRUE);
 
     NVIC_EnableIRQ(DMA1_Channel3_IRQn);
 
