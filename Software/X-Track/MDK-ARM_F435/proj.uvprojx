@@ -3056,6 +3056,11 @@
               <FilePath>..\USER\HAL\HAL.h</FilePath>
             </File>
             <File>
+              <FileName>At32SdioCard.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\USER\HAL\At32SdioCard.h</FilePath>
+            </File>
+            <File>
               <FileName>HAL.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\USER\HAL\HAL.cpp</FilePath>
@@ -3129,6 +3134,11 @@
               <FileName>HAL_SD_CARD.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\USER\HAL\HAL_SD_CARD.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>At32SdioCard.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\USER\HAL\At32SdioCard.cpp</FilePath>
             </File>
             <File>
               <FileName>HAL_USB.cpp</FileName>

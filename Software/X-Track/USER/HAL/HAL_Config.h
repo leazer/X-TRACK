@@ -91,22 +91,14 @@
 #define CONFIG_DEBUG_RX_PIN         PA10
 #define CONFIG_DEBUG_TX_PIN         PA9
 
-/* SD CARD */
-#define CONFIG_SD_SPI               SPI
+/* SD CARD SDIO2 */
 #define CONFIG_SD_CD_PIN            PA1
-#define CONFIG_SD_MOSI_PIN          PA5
-#define CONFIG_SD_MISO_PIN          PA5
-#define CONFIG_SD_SCK_PIN           PA2
-#define CONFIG_SD_CS_PIN            PA3
-
-/* SD CARD SDIO */
-// #define CONFIG_SD_CD_PIN            PA1
-// #define CONFIG_SD_SCK_PIN           PA2
-// #define CONFIG_SD_CMD_PIN           PA3
-// #define CONFIG_SD_D0_PIN            PA4
-// #define CONFIG_SD_D1_PIN            PA5
-// #define CONFIG_SD_D2_PIN            PA6
-// #define CONFIG_SD_D3_PIN            PA7
+#define CONFIG_SD_CLK_PIN           PA2
+#define CONFIG_SD_CMD_PIN           PA3
+#define CONFIG_SD_D0_PIN            PA4
+#define CONFIG_SD_D1_PIN            PA5
+#define CONFIG_SD_D2_PIN            PA6
+#define CONFIG_SD_D3_PIN            PA7
 
 
 /* HAL Interrupt Update Timer */

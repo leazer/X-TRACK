@@ -3,28 +3,27 @@
 #include "Common/HAL/HAL.h"
 #include "MillisTaskManager/MillisTaskManager.h"
 
-
 static MillisTaskManager taskManager;
 
 #if CONFIG_SENSOR_ENABLE
 
 static void HAL_Sensor_Init()
 {
-    if(HAL::I2C_Scan() <= 0)
+    if (HAL::I2C_Scan() <= 0)
     {
         Serial.println("I2C: disable sensors");
         return;
     }
 
 #if CONFIG_SENSOR_IMU_ENABLE
-    if(HAL::IMU_Init())
+    if (HAL::IMU_Init())
     {
         taskManager.Register(HAL::IMU_Update, 1000);
     }
 #endif
 
 #if CONFIG_SENSOR_MAG_ENABLE
-    if(HAL::MAG_Init())
+    if (HAL::MAG_Init())
     {
         taskManager.Register(HAL::MAG_Update, 1000);
     }
@@ -47,7 +46,7 @@ void HAL::HAL_Init()
     Serial.begin(115200);
     Serial.println(VERSION_FIRMWARE_NAME);
     Serial.println("Version: " VERSION_SOFTWARE);
-    Serial.println("Author: "  VERSION_AUTHOR_NAME);
+    Serial.println("Author: " VERSION_AUTHOR_NAME);
     Serial.println("Project: " VERSION_PROJECT_LINK);
 
     FaultHandle_Init();

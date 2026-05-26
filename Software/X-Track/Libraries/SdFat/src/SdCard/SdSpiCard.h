@@ -38,11 +38,11 @@
  * \class SdSpiCard
  * \brief Raw access to SD and SDHC flash memory cards via SPI protocol.
  */
-#if ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS
+#if ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS || ENABLE_AT32_SDIO_CARD_DRIVER
 class SdSpiCard : public BaseBlockDriver {
-#else  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS
+#else  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS || ENABLE_AT32_SDIO_CARD_DRIVER
 class SdSpiCard {
-#endif  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS
+#endif  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS || ENABLE_AT32_SDIO_CARD_DRIVER
  public:
   /** Construct an instance of SdSpiCard. */
   SdSpiCard() : m_errorCode(SD_CARD_ERROR_INIT_NOT_CALLED), m_type(0) {}
@@ -117,7 +117,7 @@ class SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool readBlock(uint32_t lba, uint8_t* dst);
+  virtual bool readBlock(uint32_t lba, uint8_t* dst);
   /**
    * Read multiple 512 byte blocks from an SD card.
    *
@@ -127,7 +127,7 @@ class SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool readBlocks(uint32_t lba, uint8_t* dst, size_t nb);
+  virtual bool readBlocks(uint32_t lba, uint8_t* dst, size_t nb);
   /**
    * Read a card's CID register. The CID contains card identification
    * information such as Manufacturer ID, Product name, Product serial
@@ -189,7 +189,7 @@ class SdSpiCard {
    */
   bool readStop();
   /** \return success if sync successful. Not for user apps. */
-  bool syncBlocks() {return true;}
+  virtual bool syncBlocks() {return true;}
   /** Return the card type: SD V1, SD V2 or SDHC
    * \return 0 - SD V1, 1 - SD V2, or 3 - SDHC.
    */
@@ -204,7 +204,7 @@ class SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool writeBlock(uint32_t lba, const uint8_t* src);
+  virtual bool writeBlock(uint32_t lba, const uint8_t* src);
   /**
    * Write multiple 512 byte blocks to an SD card.
    *
@@ -214,7 +214,7 @@ class SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool writeBlocks(uint32_t lba, const uint8_t* src, size_t nb);
+  virtual bool writeBlocks(uint32_t lba, const uint8_t* src, size_t nb);
   /** Write one data block in a multiple block write sequence.
    * \param[in] src Pointer to the location of the data to be written.
    * \return The value true is returned for success and
@@ -333,12 +333,12 @@ class SdSpiCardEX : public SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool readBlock(uint32_t block, uint8_t* dst);
+  virtual bool readBlock(uint32_t block, uint8_t* dst);
   /** End multi-block transfer and go to idle state.
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool syncBlocks();
+  virtual bool syncBlocks();
   /**
    * Writes a 512 byte block to an SD card.
    *
@@ -347,7 +347,7 @@ class SdSpiCardEX : public SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool writeBlock(uint32_t block, const uint8_t* src);
+  virtual bool writeBlock(uint32_t block, const uint8_t* src);
   /**
    * Read multiple 512 byte blocks from an SD card.
    *
@@ -357,7 +357,7 @@ class SdSpiCardEX : public SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool readBlocks(uint32_t block, uint8_t* dst, size_t nb);
+  virtual bool readBlocks(uint32_t block, uint8_t* dst, size_t nb);
   /**
    * Write multiple 512 byte blocks to an SD card.
    *
@@ -367,7 +367,7 @@ class SdSpiCardEX : public SdSpiCard {
    * \return The value true is returned for success and
    * the value false is returned for failure.
    */
-  bool writeBlocks(uint32_t block, const uint8_t* src, size_t nb);
+  virtual bool writeBlocks(uint32_t block, const uint8_t* src, size_t nb);
 
  private:
   static const uint32_t IDLE_STATE = 0;

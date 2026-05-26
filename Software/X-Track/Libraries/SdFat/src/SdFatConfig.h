@@ -71,6 +71,12 @@
 #define ENABLE_EXTENDED_TRANSFER_CLASS 0
 //------------------------------------------------------------------------------
 /**
+ * Allow application block drivers, including the AT32 SDIO2 card driver,
+ * to be mounted through FatFileSystem without enabling SdFatEX.
+ */
+#define ENABLE_AT32_SDIO_CARD_DRIVER 1
+//------------------------------------------------------------------------------
+/**
  * If the symbol USE_STANDARD_SPI_LIBRARY is zero, an optimized custom SPI
  * driver is used if it exists.  If the symbol USE_STANDARD_SPI_LIBRARY is
  * one, the standard Arduino SPI.h library is used with SPI. If the symbol

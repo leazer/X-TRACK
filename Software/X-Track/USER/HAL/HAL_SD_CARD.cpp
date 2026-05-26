@@ -1,11 +1,21 @@
 #include "HAL.h"
 #include "Config/Config.h"
 #include "SdFat.h"
+#include "At32SdioCard.h"
 
 #include "msc_diskio.h"
 #include "cdc_msc_class.h"
 
-static SdFat SD(&CONFIG_SD_SPI);
+class At32SdioFileSystem : public SdFileSystem<At32SdioCard>
+{
+public:
+    bool begin()
+    {
+        return m_card.begin() && SdFileSystem<At32SdioCard>::begin();
+    }
+};
+
+static At32SdioFileSystem SD;
 
 static bool SD_IsReady = false;
 static uint32_t SD_CardSize = 0;
@@ -67,7 +77,7 @@ bool HAL::SD_Init()
     }
 
     Serial.print("SD: init...");
-    retval = SD.begin(CONFIG_SD_CS_PIN, SD_SCK_MHZ(30));
+    retval = SD.begin();
 
     if(retval)
     {
@@ -82,7 +92,9 @@ bool HAL::SD_Init()
     }
     else
     {
-        Serial.printf("failed: 0x%x\r\n", SD.cardErrorCode());
+        Serial.printf("failed: code=0x%x, data=0x%lx\r\n",
+                      SD.cardErrorCode(),
+                      SD.cardErrorData());
     }
 
     SD_IsReady = retval;

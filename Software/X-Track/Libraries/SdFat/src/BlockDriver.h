@@ -32,9 +32,9 @@
 #include "SdCard/SdSpiCard.h"
 //-----------------------------------------------------------------------------
 /** typedef for BlockDriver */
-#if ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS
+#if ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS || ENABLE_AT32_SDIO_CARD_DRIVER
 typedef BaseBlockDriver BlockDriver;
-#else  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS
+#else  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS || ENABLE_AT32_SDIO_CARD_DRIVER
 typedef SdSpiCard BlockDriver;
-#endif  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS
+#endif  // ENABLE_EXTENDED_TRANSFER_CLASS || ENABLE_SDIO_CLASS || ENABLE_AT32_SDIO_CARD_DRIVER
 #endif  // BlockDriver_h
