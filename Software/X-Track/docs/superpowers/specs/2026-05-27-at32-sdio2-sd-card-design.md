@@ -1,19 +1,16 @@
-# AT32 SDIO2 SD Card Migration Design
+# AT32 SDIO2 SD 卡迁移设计
 
-## Goal
+## 目标
 
-Replace the project's SPI-based SD card transport with the hardware SDIO2
-interface so file reads, recording, and USB MSC access benefit from 4-bit
-SDIO transfer while preserving the existing application-facing storage
-behavior.
+将工程中基于 SPI 的 SD 卡传输方式替换为硬件 SDIO2 接口，使文件读取、轨迹记录和 USB MSC 访问能够使用 4 位 SDIO 传输能力，同时保持应用层现有存储行为不变。
 
-## Confirmed Hardware
+## 已确认硬件配置
 
-The target controller is AT32F435/437 and the SD card is connected to SDIO2:
+目标控制器为 AT32F435/437，SD 卡连接到 SDIO2：
 
-| Signal | Pin |
+| 信号 | 引脚 |
 | --- | --- |
-| Card detect | PA1 |
+| 卡检测 | PA1 |
 | SDIO2_CK | PA2 |
 | SDIO2_CMD | PA3 |
 | SDIO2_D0 | PA4 |
@@ -21,123 +18,88 @@ The target controller is AT32F435/437 and the SD card is connected to SDIO2:
 | SDIO2_D2 | PA6 |
 | SDIO2_D3 | PA7 |
 
-The AT32F435/437 datasheet identifies these pins as valid SDIO2 alternate
-functions. The implementation must configure the matching GPIO alternate
-function selection documented in the AT32 reference manual.
+AT32F435/437 数据手册已确认这些引脚支持对应的 SDIO2 复用功能。实现时必须按照 AT32 参考手册配置正确的 GPIO 复用选择。
 
-## Existing Architecture
+## 当前架构
 
-`USER/HAL/HAL_SD_CARD.cpp` owns the single mounted SD card instance. It:
+`USER/HAL/HAL_SD_CARD.cpp` 持有工程中唯一挂载的 SD 卡实例，负责：
 
-- mounts a `SdFat` filesystem through SPI;
-- reports card readiness, size, and type to the application;
-- creates the track-record directory;
-- implements USB MSC raw block read/write through `SD.card()`.
+- 通过 SPI 挂载 `SdFat` 文件系统；
+- 向应用提供 SD 卡就绪状态、容量和类型；
+- 创建轨迹记录目录；
+- 通过 `SD.card()` 为 USB MSC 提供原始块读写接口。
 
-Application storage consumers use `SdFile` or the HAL status functions.
-Consequently, LVGL filesystem integration, recorder code, image loading, and
-USB MSC do not need separate interface rewrites when the block driver changes.
+应用层存储使用者均通过 `SdFile` 或 HAL 状态接口访问存储。因此，在块驱动替换完成后，LVGL 文件系统接入、轨迹记录、图片读取和 USB MSC 无需分别重写接口。
 
-## Chosen Approach
+## 选定方案
 
-Implement an AT32-specific SDIO block driver compatible with the existing
-SdFat `BaseBlockDriver` contract, then mount the same Fat filesystem through
-that driver in `HAL_SD_CARD.cpp`.
+实现一个与现有 SdFat `BaseBlockDriver` 契约兼容的 AT32 专用 SDIO 块驱动，并在 `HAL_SD_CARD.cpp` 中通过该驱动挂载原有 Fat 文件系统。
 
-This avoids modifying all storage clients and avoids treating SdFat's existing
-`SdFatSdio` implementation as portable: the bundled SDIO source is enabled
-only for Teensy/Kinetis hardware and cannot directly drive AT32 SDIO2.
+此方案既避免修改所有存储调用方，也不会错误地将 SdFat 当前自带的 `SdFatSdio` 实现视作可直接移植代码：仓库中的 SDIO 源码仅针对 Teensy/Kinetis 硬件启用，不能直接驱动 AT32 SDIO2。
 
-## Components
+## 组件设计
 
-### Board Configuration
+### 板级配置
 
-`USER/HAL/HAL_Config.h` will expose the confirmed SDIO2 pins and card-detect
-pin. SPI-specific SD card bus and chip-select configuration will no longer be
-used by the SD card HAL.
+`USER/HAL/HAL_Config.h` 将启用已确认的 SDIO2 信号引脚和卡检测引脚。SD 卡 HAL 不再使用 SPI 总线和片选相关配置。
 
-### AT32 SDIO Card Driver
+### AT32 SDIO 卡驱动
 
-A new driver in the project HAL layer will provide the operations required by
-SdFat and USB MSC:
+在工程 HAL 层新增驱动，为 SdFat 和 USB MSC 提供所需操作：
 
-- initialization and card enumeration;
-- card capacity and SD card type reporting;
-- single- and multi-block reads;
-- single- and multi-block writes;
-- synchronization and error reporting.
+- 初始化和卡枚举；
+- 卡容量及 SD 卡类型报告；
+- 单块和多块读取；
+- 单块和多块写入；
+- 同步和错误报告。
 
-The driver will use the existing AT32 standard peripheral SDIO APIs and a free
-DMA channel routed with `DMAMUX_DMAREQ_ID_SDIO2`. Existing code currently uses
-`DMA1_CHANNEL1` for ADC and `DMA1_CHANNEL3` for display transmission, so the
-SDIO assignment must not conflict with either channel.
+驱动使用工程已有的 AT32 标准外设 SDIO API，并通过 `DMAMUX_DMAREQ_ID_SDIO2` 连接空闲 DMA 通道。当前代码中 `DMA1_CHANNEL1` 已用于 ADC，`DMA1_CHANNEL3` 已用于屏幕传输，因此 SDIO 的 DMA 分配不得与二者冲突。
 
-### Filesystem Adapter
+### 文件系统适配
 
-`HAL_SD_CARD.cpp` will replace the SPI-backed `SdFat` object with a filesystem
-object templated on the AT32 SDIO driver. Its public HAL behavior remains
-unchanged:
+`HAL_SD_CARD.cpp` 将把 SPI 支持的 `SdFat` 对象替换为以 AT32 SDIO 驱动为模板参数的文件系统对象。HAL 对外行为保持不变：
 
-- card insertion/removal callbacks remain intact;
-- size and type reporting continue through the block driver;
-- track directory creation remains after successful mount;
-- USB MSC capacity/read/write functions continue to access raw blocks through
-  the mounted card object.
+- SD 卡插入和拔出回调保持原状；
+- 容量及类型信息继续由块驱动提供；
+- 成功挂载后仍创建轨迹目录；
+- USB MSC 容量、读取和写入函数继续通过已挂载卡对象访问原始数据块。
 
-## Initialization And Data Flow
+## 初始化与数据流
 
-On insertion, the HAL keeps the existing card-detect check, then initializes
-SDIO2 in native SD mode:
+插卡后，HAL 保留现有卡检测逻辑，随后在原生 SD 模式下初始化 SDIO2：
 
-1. Configure SDIO2 GPIOs, peripheral clock, power, and a low initialization
-   bus clock in 1-bit mode.
-2. Enumerate the card using the native SD command sequence, including reset,
-   voltage/capability negotiation, RCA selection, and card selection.
-3. Read card metadata needed for capacity and type.
-4. Request 4-bit bus mode, configure SDIO2 for 4-bit operation, and raise the
-   transfer clock to the configured operational rate.
-5. Mount the Fat filesystem through the SDIO block driver.
+1. 配置 SDIO2 GPIO、外设时钟和供电，并以 1 位模式使用低速初始化总线时钟。
+2. 使用原生 SD 命令序列完成卡枚举，包括复位、电压及能力协商、RCA 分配和选卡。
+3. 读取计算容量和卡类型所需的卡元数据。
+4. 请求进入 4 位总线模式，将 SDIO2 配置为 4 位工作，并将时钟提高到传输频率。
+5. 通过 SDIO 块驱动挂载 Fat 文件系统。
 
-Normal file operations then flow from existing `SdFile` clients through
-SdFat/FatLib to the new block driver. USB MSC calls bypass file operations but
-use the same SDIO driver's raw block methods.
+正常文件操作继续由现有 `SdFile` 调用方经 SdFat/FatLib 流向新的块驱动。USB MSC 不经过文件接口，但使用同一个 SDIO 驱动提供的原始块读写方法。
 
-## Transfer Strategy
+## 传输策略
 
-The target implementation is 4-bit SDIO2 with DMA-backed block transfer and
-multi-block operations where the SdFat request contains more than one sector.
-Single-sector operations remain supported for filesystem metadata and small
-accesses. The driver must stop or synchronize active multi-block writes before
-the card is exposed as complete to FatLib or USB MSC.
+目标实现为 4 位 SDIO2，并使用 DMA 支持的数据块传输；当 SdFat 请求包含多个扇区时，使用多块操作。文件系统元数据和小型访问仍支持单扇区操作。驱动必须在 FatLib 或 USB MSC 收到完成结果前，正确结束或同步进行中的多块写操作。
 
-## Error Handling
+## 错误处理
 
-- Initialization returns failure if card detection, command negotiation,
-  4-bit mode selection, or filesystem mounting fails.
-- SDIO command timeout, response CRC, data CRC, overrun, underrun, and transfer
-  timeout conditions are converted to block-driver failure/error status.
-- A failed read or write propagates through existing USB MSC return values and
-  filesystem operations.
-- On removal, readiness and cached capacity are cleared as they are today.
+- 卡检测失败、命令协商失败、4 位模式切换失败或文件系统挂载失败时，初始化返回失败。
+- SDIO 命令超时、响应 CRC 错误、数据 CRC 错误、接收溢出、发送欠载及传输超时均转换为块驱动失败或错误状态。
+- 读取或写入失败继续通过现有 USB MSC 返回值及文件系统操作向上层传播。
+- 拔卡时，按当前行为清除就绪状态和缓存的容量信息。
 
-## Verification
+## 验证方式
 
-Static verification will include a firmware build after integration and checks
-that SPI SD initialization is no longer reachable in the SD HAL.
+静态验证包括：完成接入后的固件构建，以及检查 SD HAL 中不再存在可达的 SPI SD 初始化路径。
 
-Hardware verification will cover:
+硬件验证包括：
 
-- insert/remove detection and successful mount;
-- reported card type and capacity;
-- create/write/read a recorded track file;
-- LVGL/image reads from the card;
-- USB MSC host read and write;
-- repeated multi-block large-file read/write with throughput comparison against
-  the previous SPI implementation.
+- 插拔检测及成功挂载；
+- 卡类型和容量显示；
+- 创建、写入并读取轨迹记录文件；
+- 从卡中读取 LVGL/图片资源；
+- USB MSC 主机端读取和写入；
+- 重复进行大文件多块读写，并与原 SPI 实现比较吞吐性能。
 
-## Scope
+## 范围边界
 
-This change covers the hardware storage transport and the existing storage
-surfaces that already route through `HAL_SD_CARD.cpp`. It does not change
-unrelated display SPI usage, filesystem format, application file formats, or
-USB class behavior beyond its underlying media transport.
+本次修改覆盖硬件存储传输方式，以及已经通过 `HAL_SD_CARD.cpp` 汇聚的现有存储访问面。修改不涉及无关的屏幕 SPI 使用方式、文件系统格式、应用文件格式，也不改变 USB 类行为，仅替换其底层介质传输方式。
