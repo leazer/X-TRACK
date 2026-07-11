@@ -119,6 +119,13 @@
             <ModeSub name="OTGFS1_Device" value="CDC"/>
         </Mode>
     </USB_DEVICE>
+    <DMA>
+        <SPI2_TX>
+            <ParametersSub name="Instance" value="DMA1_Channel3"/>
+            <ParametersSub name="SyncRequestCount" value="1"/>
+            <ParametersSub name="RequestCount" value="1"/>
+        </SPI2_TX>
+    </DMA>
     <NVIC>
         <SysTick_Handler>1;15;0;0;0</SysTick_Handler>
         <FLASH_IRQHandler>0;0;0;0;0</FLASH_IRQHandler>
@@ -135,8 +142,10 @@
         <USART1_IRQHandler>0;0;0;0;0</USART1_IRQHandler>
         <USART3_IRQHandler>0;0;0;0;0</USART3_IRQHandler>
         <OTGFS1_WKUP_IRQHandler>0;0;0;0;0</OTGFS1_WKUP_IRQHandler>
+        <DMA1_Channel3_IRQHandler>0;0;0;0;0</DMA1_Channel3_IRQHandler>
         <OTGFS1_IRQHandler>1;0;0;0;0</OTGFS1_IRQHandler>
         <FPU_IRQHandler>0;0;0;0;0</FPU_IRQHandler>
+        <DMAMUX_IRQHandler>0;0;0;0;0</DMAMUX_IRQHandler>
         <ACC_IRQHandler>0;0;0;0;0</ACC_IRQHandler>
     </NVIC>
     <GPIO>
